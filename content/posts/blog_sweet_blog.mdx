@@ -1,0 +1,104 @@
+---
+id: "blog_sweet_blog"
+title: "O que é preciso para criar um blog? Uma abordagem prática"
+author: rog
+date: 2023-12-09
+draft: false
+tags: 
+- blog
+- astro
+- tailwind
+- motion-canvas
+postType: "Showcase"
+description: "Queria compartilhar minha jornada com todos, mostrar minhas ideias, mas queria uma coisa minha, não queria ir para um Medium ou dev.to da vida. Nada me deixa mais confortável do que um lugar para chamar de meu."
+image: {
+    "src": "/images/posts/blog_sweet_blog/blog_sweet_blog.jpg",
+    "alt": "Blog Sweet Blog Post Image"
+}
+---
+import BrandIcon from "../../components/BrandIcon.astro"
+
+Bem-vindo(a)! Quero falar sobre como foi o processo de criação do blog, desde da decisão de criar até o que você está vendo agora.
+
+Bom, sempre gostei de compartilhar o que faço e como faço, ideia, produtos, projetos, etc. Tudo que criava colocava no meu GitHub como forma de mostrar isso, mas ter apenas o projeto não torna ele completo, quero falar como cheguei ao final dele, tudo que aprendi e porque fiz ele pra começo de conversa. Além disso, vejo muito conteúdo da gringa super interessante mas que aqui não é tão explorado, então o blog vai suprir esta necessidade também.
+
+> Mas porque você simplesmente não usa essa plataforma tipo Medium?
+
+Resposta curta e grosa: Queria uma coisa minha.
+
+Não queria ir para um Medium ou dev.to da vida, nada me deixa mais confortável do que um lugar para chamar de meu, nada contra quem usa esse tipo de plataforma mas que isso não era o que eu quero, então decidi criar um blog, mas nunca havia criado um site antes e isso me deixou com receio do que eu conseguiria fazer sem experiência nesta área, mas o mais passo mais difícil eu consegui dar, o começo, não planejei nada do que ia fazer, apenas criei o que achava certo e agradável para mim, isso é o que torna este lugar único, então espero que goste.
+
+Chega de falar de sentimentos e vamos falar de coisa técnica.
+
+# O que foi usado
+O blog foi criado majoritariamente com <BrandIcon brand="astro"/> Astro, sem nenhuma integração com bibliotecas de UI como <BrandIcon brand="react"/> React, <BrandIcon brand="svelte"/> Svelte, <BrandIcon brand="vuedotjs"/> Vue, etc. 
+Sendo um site estático, ele carrega bastante rápido e não precisei usar um dos principais recursos do Astro e seu diferencial. Ele possuí um conceito chamado Ilhas, onde estás ilhas são componentes interativos que usam <BrandIcon brand="javascript"/> Javascript para funcionar, mas eles estão isolados do resto da página, então, enquanto a página em seu todo é <BrandIcon brand="html5"/> HTML estatístico as ilhas asseguram que o Javascript só será carregados para si quando for necessário.
+![](/images/posts/blog_sweet_blog/astro_islands.gif)
+
+Mas como disse antes, acabei nem precisando usar.
+
+Certo, mas não foi isso que me fez escolher o Astro em primeiro lugar, escolhi ele pela **Coleção de Conteúdo**, o Astro possuí está forma super conveniente de manter o conteúdo do seu site organizado.
+
+## Content Collection
+Você cria uma pasta `/src/content` (está pasta é reservada pelo o Astro e não deve conter nada além do que é suportado por ele) e lá você irá criar uma coleção que nada mais é do que uma pasta (ex. posts), nesta pasta você pode colocar dois tipos de conteúdo, data (informações) e content (conteúdo).
+
+Data se refere apenas a dados/informações que você queira organizar e até usá-las para relacionar com outras informações ou conteúdo. No blog estou usando para guardar informações do(s) autores, apesar de ter só eu escrevendo, quero ter isso organizado também.
+Já o conteúdo é um texto que pode possuir metadados (definidos no frontmatter do conteúdo) e que será renderizado pelo Astro na hora do build, como por exemplo os próprios posts, eles tem metadados como título, autor, data de postagem, etc e além do corpo em si.
+
+O Astro permite você escrever seus conteúdos tanto em <BrandIcon brand="markdown"/> Markdown quanto em <BrandIcon brand="mdx"/> MDX que suporta componentes, esses componentes também são considerados ilhas, no final seu conteúdo será gerado e renderizado para HTML estatístico na hora do build pelo Astro.
+
+![](/images/posts/blog_sweet_blog/content_collection.gif)
+
+# Estilos
+
+Como disse antes, não trabalhei muito com tecnologias web e o que mais me assustava era o <BrandIcon brand="css3"/> CSS, poderia até usar o blog como desculpa pra finalmente aprender de vez mas você provavelmente já notou (ou não) acabei pulando várias etapas e abracei o <BrandIcon brand="tailwindcss"/> Tailwind como meu herói. 
+Não poderia está mais satisfeito com a ótima experiência de desenvolvimento que ele proporciona, só de não ter que escrever CSS puro já ganha pontos comigo, fale o que quiser, posso até estar errado em ir direto para um facilitador, mas me ajudou muito.
+
+# Animações
+Você viu em seções anteriores as animações que ilustra o que está sendo descrito, e se eu te falar que estas animações são feitas com código em <BrandIcon brand="typescript"/> Typescript 🤯.
+
+[Motion Cavas](https://motioncanvas.io) é uma biblioteca que permite criar animações usando um conceito que talvez você conheça mas nem use tanto: Geradores (Generators).
+Ao invés da forma tradicional de animação declarativa, o Motion Canvas torna este processo imperativo por meio de evento que quando ele chega ao fim o próximo é chamado, isso torna mais fácil de aplicar mudança ao timing da animação, já que ao invés de você dizer:
+
+- **Da forma declarativa:** 
+> Do segundo 0 até o segundo 1 mova este círculo de um lado para o outro da tela e do segundo 1,5 até o segundo 3 aumente o tamanho dele até 150px
+- **Você fala da forma imperativa:** 
+> O círculo vai de um lado para outro da tela em 1 segundo depois ele vai aumenta seu tamanho até 150px em 1,5 segundo
+
+![](/images/posts/blog_sweet_blog/animation_dif.png)
+<details>
+<summary>Desmonstração</summary>
+
+![Animations Demo](/images/posts/blog_sweet_blog/declarative_imperative_animation.gif)  
+*Estas animações específicas foram criadas pelo próprio criador do Motion Canvas para seu canal no YouTube, lá ele fala mais sobre a biblioteca, recomendo muito assistir o vídeo. [Link](https://youtu.be/WTUafAwrunE?si=EK6WvltecBdj_Czx)*
+</details>
+
+No final a animação e a duração dela a mesma. Além disso, se quiser mudar o tempo de animação de alguma ação é só mudar que as outras vão seguir, já que uma ação só vai começar quando a outra terminar.
+
+# CI/CD
+Existem algumas peculiaridades aqui, para deixar claro o blog é hospedado na <BrandIcon brand="vercel"/>Vercel mas é dividido em dois projetos diferentes.
+Um projeto é usado para hospedar a build de desenvolvimento e outro é para a build com o conteúdo verdadeiro, a build de desenvolvimento é pública e você pode acessar a build de desenvolvimento [aqui](https://lrtechblog-dev.vercel.app). 
+Toda vez que um push é feito para o repositório [blog](https://github.com/LR-Tech-Blog/blog) acontece uma série de evento:
+
+1. O repositório está linkado com a Vercel, então ela irá fazer deploy das novas alterações para o ambiente de produção do projeto de desenvolvimento.
+2. Ao mesmo tempo, é feito deploy no ambiente de preview no projeto com o conteúdo verdadeiro.
+
+> Mas pra que tudo isso? Tá muito confuso.
+
+O conteúdo do blog (como este que você está lendo agora) está em um repositório diferente do site, pois queria deixar o conteúdo do repositório do blog apenas com conteúdo para testar componentes e comportamento dos post (se você acessou o site de desenvolvimento vai entender melhor), enquanto o repositório [content](https://github.com/LR-Tech-Blog/content) guarda o real conteúdo.
+
+Para juntar todos estes repositório eu uso um pipeline com GitHub Actions que faz checkout de todos os repositório que estão separados (só o repositório de conteúdo e o blog), sobre escrevo o conteúdo de desenvolvimento pelo verdadeiro, faço o build e depois o deploy pra Vercel usando o Vercel CLI.
+
+Parece confuso mas acaba sendo mais prático assim para mim, apesar de ser um processo complicado e chato acaba por não ser nada quando usa o GH Actions pra automatizar.
+
+# Open-source
+Como já havia falado antes, muita coisa que faço coloco no meu GitHub como forma de mostrar abertamente o que faço, e aqui não é diferente, tudo que mencionei aqui está open-source no GitHub para você ver, aprender ou até contribuir.
+
+Quer que alguma feature seja implementada? Um problema na estrutura do site? Informação errada ou erro gramatical? Os posts estão open-source para qualquer modificação ou correção, além também das animações. Então não hesite em abrir uma issue ou um PR.
+
+**Toda ajuda é bem vinda. ❤️**
+
+# Acompanhe
+Espero te ver aqui mais vezes, o blog também tem suporte a [RSS](https://lrtechblog.vercel.app/rss.xml) onde você pode se inscrever e ser notificado sempre que postar algo novo.
+
+***Peace ✌️***
