@@ -1,0 +1,254 @@
+---
+id: "turbo_terminal"
+title: "Tunando o terminal: Customizando e melhorando o uso do prompt"
+author: rog
+date: 2023-12-22
+draft: false
+tags: 
+- windows
+- terminal
+- prompt
+- tui
+- powershell
+- starship
+postType: "Tutorial"
+description: "Se você acha que o terminal não passa de um software antigo que só serve para executar comandos antigo, você está muito enganado. Vou mostrar como você pode customizar o seu terminal e torná-lo mais bonito e funcional."
+image: {
+    "src": "/images/posts/turbo_terminal/turbo_terminal.jpg",
+    "alt": "Turbo Terminal Post Image"
+}
+---
+
+import BrandIcon from "../../components/BrandIcon.astro"
+
+# Chato e difícil
+
+O terminal (aka. Console, aka. Propt) hoje em dia é bastante difícil de usar, muito por conta dos programas com interface gráfica que facilita o uso de qualquer ferramenta e faz com que possamos executar tarefas rapidamente, o que nos faz pensar que o terminal já não tem mais utilidade. 
+Ainda usamos muito por conta que vários programas como Node só são usados em uma interface CLI (Command Line Interface), mas se não fosse por esses casos, possivelmente, muitos de nós não veria mais a infame tela preta do terminal.
+
+![Um terminal comum](/images/posts/turbo_terminal/boring_terminal.png)
+
+Mas quero mostrar que hoje que o terminal tem bastante potencial para ser usado para muito além disso e que para certas tarefas você vai preferir usá-lo. 
+Então vamos sair dessa simples tela preto e branco para um terminal que dá gosto de ver e turbinado, usando alternativas modernas a comandos antigos.
+
+![Meu preset de terminal com Starship no Windows Terminal](/images/posts/turbo_terminal/cool_terminal1.png)
+
+![Meu preset de terminal com Starship no Windows Terminal](/images/posts/turbo_terminal/cool_terminal2.png)
+
+# Pré requisitos
+
+Antes de começar, vou estar usando o  <BrandIcon brand="windows11"/>Windows 11 com <BrandIcon brand="powershell"/>PowerShell 7 no <BrandIcon brand="windowsterminal"/>Windows Terminal como cobaia, juntamente com o **scoop** para instalar o que vamos usar, então se você está usando outro shell ou outro sistema operacional, não se preocupe, quase todas as ferramentas que vamos usar aqui é multiplataforma.
+
+Se você não sabe qual a diferença entre CMD e PowerShell [veja este vídeo (inglês)](https://learn.microsoft.com/pt-br/shows/one-dev-minute/what-is-the-difference-between-cmd-powershell-and-bash--one-dev-question).
+
+## Instalar o Scoop
+
+Antes de instalar o **scoop**, você precisar permitir a execução de scripts de terceiros no seu terminal, no PowerShell basta executar:
+```shell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+Agora para instalar o scoop:
+```shell
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+```
+
+Isso permitirá instalar ele com as configurações padrões, para opções mais avançadas, veja o [site oficial](https://scoop.sh).
+
+Depois de instalar, você usa ele por meio da CLI, então para ver se ele foi instalado e os comandos básico, basta executar:
+```shell
+scoop --help
+```
+> 💡 Vários programas que tem interface em linha de comando possuem a flag `--help` para mostrar a saída de ajuda, ele acaba sendo útil também se você quiser saber apenas se um programa está instalado.
+
+Dessa forma, ele irá mostrar todos os comandos suportados por ele.
+
+Agora que instalamos o nosso gerenciador de pacotes, vamos instalar o prompt customizado.
+
+# Customizado o prompt
+
+Aqui fica um pouco da sua preferência, já que nessa categoria existem vários programas que servem este propósito. 
+Minha preferência é o <BrandIcon brand="starship"/>Starship, que já uso a bastante tempo e migrei do Oh My Posh para ele, ao final desta seção falo mais sobre isso.
+
+## Instalar o Starship
+Então vamos começar usando o scoop para instalar o Starship:
+```shell
+scoop install starship
+```
+
+Quando terminar você vai notar que não mudou nada, isso porquê ele, como qualquer outro, também é um programa que temos que inicializar.
+Queremos que ele inicie sempre que nós abrirmos nosso shell, para isso devemos modificar o script de perfil, que é chamado toda vez que abrimos uma nova seção no terminal, no caso do PowerShell, você pode verificar o caminho desse script na variável $PROFILE dessa forma:
+```shell
+echo $PROFILE
+```
+> 💡 Esta etapa pode variar de acordo do seu shell, pesquise qual script ele executa quando uma nova seção é iniciada nele.
+
+Caso não exista nada no caminho da variável `$PROFILE` você pode criar. Note que ele também fala o nome do arquivo, então ele deve ser criado também com o mesmo nome (geralmente `Microsoft.PowerShell_profile.ps1`).
+
+Já no arquivo devemos iniciar o Starship dessa forma:
+```powershell
+Invoke-Expression (&starship init powershell)
+```
+*Arquivo: `Microsoft.PowerShell_profile.ps1`*
+
+Agora basta reiniciar sua seção no terminal (fechar e abrir de novo) e o Starship já vai iniciar.
+
+Se você estiver em algum projeto no seu computador, ele deve reconhecer a versão do runtime que você usa para rodar o projeto, além também de algumas informações do <BrandIcon brand="git"/>Git.
+
+![Resultado até agora](/images/posts/turbo_terminal/result_after_starship.png)
+
+### Corrigindo as fontes
+
+Mas veja que alguns caracteres não estão sendo reconhecidos, isso é por conta da fonte que não tem determinados caracteres, para corrigir isso existe uma série de fontes chamadas [NerdFonts](https://www.nerdfonts.com).
+
+Acesse a [pagina de download](https://www.nerdfonts.com/font-downloads) das fontes e escolha uma da sua preferência (todas possuem os caracteres que queremos), pessoalmente eu uso a FiraCode Nerd Font. 
+Depois de baixado, instale e aplique no seu terminal.
+
+![Mudando a fonte no Windows Terminal](/images/posts/turbo_terminal/change_font.gif)
+
+### Personalizações pessoal
+
+Também gosto de mudar a espessura da fonte para Extra-Bold. O plano de fundo é um wallpaper do Final Fantasy IV (Pixel Remaster), note que nem todo terminal suporta mudar o plano de fundo, mas daqui pra frente irei usar meu perfil principal do Windows Terminal, se quiser copiar, acesse o [link do Gist](https://gist.github.com/LuanRoger/04b394c87e07e6315e50016ce6ac17d7).
+
+## Customizando o Starship
+
+O Startship pode ser configurado para exibir diferentes informações, como uso de memória, SO, bateria (já que estou usando um notebook), além também da versão do runtime do projeto e muitas outras configurações.
+
+![Starship com algumas configurações](/images/posts/turbo_terminal/starship_preferences.png)
+
+Ele é configurado por um arquivo `.toml` que, se você esta no Windows, ele fica em `~/.config/starship.toml` (lembre que o `~` é equivalente a `$HOME`), se este arquivo não existir, você pode cria-lo.
+
+Na documentação do Starship tem a seção [Configurations](https://starship.rs/config) onde está TUDO que é possível configurar nele, mas se não quiser colocar tudo manual, não tem problema, em [Presets](https://starship.rs/presets) tem várias configurações prontas e que algumas, modificam até a forma que as informações são exibidas. 
+Fiz a minha configuração baseada no [Nerd Font Symbols Preset](https://starship.rs/presets/nerd-font.html) com algumas coisas a mais, se quiser copiar, aqui esta o [link do Gist](https://gist.github.com/LuanRoger/a7de7f75983e59a13ea7382c36876564).
+
+## Porquê deixei de usar o Oh My Posh
+
+Um rápido relato, a primeira ferramenta de customização do prompt que usei foi o Oh My Posh, ele tem bem mais “módulos” do que o Starship, desde de um módulo que fala a música que você está ouvindo no <BrandIcon brand="spotify"/>Spotify até um módulo de clima.
+
+Mas ele tornava o terminal bastante lento se você colocasse vários módulos para funcionar, depois de um comando, ele carregava as informações que os módulos exibiam por vários segundos e tornava a experiência bastante lenta.
+
+Então (ao invés de remover os módulos) acabei por mudar para o Starship que mesmo com poucas configurações sobre o seu ambiente, acaba por ser mais agradável de usar. 
+Recomendo experimentar o Oh My Posh como alternativa ao Starship.
+
+# Ferramentas
+
+Não poderia falar sobre o terminal sem citar algumas ferramentas valiosas que ajudam (e muito) a executar tarefas nesse ambiente, até porque, o terminal é bastante antigo e muitos dos utilitários que usávamos no passado prevalecem até hoje, então vou listar algumas ferramentas que uso diariamente e outras que já usei (para que você não tenha que procurar por mais).
+
+### Definir sinônimos
+
+Em todo terminal, é possível definir sinônimos (Alias) para comandos, isso permite que você associe determinada palavra com um programa. 
+Por exemplo, você pode definir que a palavra `arquivos` execute o comando `ls`. 
+Por praticidade, tente criar sinônimos que são mais curtos do que o comando original.
+
+Para criar um alias você pode usar o comando `Set-Alias`:
+```powershell
+Set-Alias -Name ls -Value lsd
+```
+*Arquivo: `Microsoft.PowerShell_profile.ps1`*
+
+O `Set-Alias` vai criar um sinônimo apenas para a sessão atual, isso significa que se você fechar o terminal e abrir de novo, o sinônimo  não irá mais funcionar. 
+Para corrigir isso, você deve especificar este comando no arquivo `Microsoft.PowerShell_profile.ps1`, dessa forma, ele vai atribuir todos os sinônimos sempre que iniciar uma seção.
+
+## [lsd](https://github.com/lsd-rs/lsd)
+
+Você já deve ter notado nas seções anteriores, o comando `ls` tem uma saída diferente do seu, isso porque estou usando uma ferramenta específica para linhas de comando como alternativa ao `ls`, o `lsd` (LSDeluxe) pode organizar os arquivos em diferentes layouts, exibir ícones (por meio do Nerd Fonts) diferentes dependendo do tipo de arquivo ou diretório, colori cada informação além de ser altamente configurável e customizável.
+
+![Demo lsd](/images/posts/turbo_terminal/lsd_demo.gif)
+
+## [micro](https://github.com/zyedidia/micro)
+
+Pra você que nunca se acostumou com os controles e atalhos confusos do Vim, então essa é uma ótima alternativa, simples, intuitiva e fácil de usar. 
+Veio para ser mais um sucessor do nano do que do vim, mas para quem sente a necessidade de fazer aquela edição rápida em um arquivo e não quer abrir o VSCode ou a IDE pra isso, então dê uma chance ao micro.
+
+O micro tem um mapeamento de teclas padrão bem familiar como Crtl-S para salvar, Crtl-Z para desfazer, Crtl-C / Crtl-V para corrigir aquele erro e o Crtl-Q para sair, além de suporte a mouse, a plugins (feitos em <BrandIcon brand="lua"/>Lua), a mais de 130 linguagens e divisão entre arquivos na mesma tela.
+
+![Demo micro](/images/posts/turbo_terminal/micro_demo.gif)
+
+## [bat](https://github.com/sharkdp/bat)
+
+Esta é um crucial que não pode faltar, se você conhece o comando `cat` para exibir o conteúdo de um arquivo no terminal então sabe que ele é bastante limitado, principalmente no quesito visualização.
+
+O `bat` veio como alternativa a este comando, ele possui *syntax highlighting* para diferentes linguagens, mostra o número de linha, tem integração com Git, mostra arquivos *diff* e mais.
+
+![Demo bat](/images/posts/turbo_terminal/bat_demo.gif)
+
+## [glow](https://github.com/charmbracelet/glow)
+
+Como complemento do `bat`, este renderiza <BrandIcon brand="markdown"/>Markdown no seu terminal, bastante útil para ler README dos projetos que você clonou a algum tempo e já não sabe o que é, então abre o README para ver do que se trata.
+
+Além de uma interface CLI, ele tem uma TUI (Terminal User Interface) que basta só digitar `glow` (sem argumentos) para acessá-lo, nele você consegue ver os arquivos Markdown no diretório atual, novidades do programa e gerenciar seus stashes, pois o `glow` tem suporte a *stashing* de arquivos, você pode salvar o estado dos seus arquivos, modificá-los e os stashes vão permanecer o mesmo.
+
+![Demo glow](/images/posts/turbo_terminal/glow_demo.gif)
+
+## [tiptop](https://github.com/nschloe/tiptop)
+
+Este é um daqueles que você vai quere sempre deixar uma aba aberto no terminal. 
+O `tiptop` é uma ferramenta de monitoramento de sistema, inspirado no antigo comando `top` dos Unix, ele tem uma bela interface, mostrando gráficos e histórico de métricas do sistema como uso de CPU, memoria, disco e rede, além dos processo em execução.
+
+![Demo tiptop](/images/posts/turbo_terminal/tiptop_demo.png)
+
+Diferente das outras ferramentas, esta não está disponível no `scoop` ela foi criada em <BrandIcon brand="python"/>Python e não possui binários para serem executados. 
+Você pode simplesmente clonar o repositório do tiptop e executar a partir dele ou instalá-lo usando o `pip` com o seguinte comando:
+```shell
+pip install tiptop
+```
+
+## [duf](https://github.com/muesli/duf)
+
+`duf` é a abreviação de Disk Usage/Free Utility e faz exatamente o que seu nome diz, utilitário que verifica o uso de espaço em disco, proposta bem simples mas é aquele tipo de utilitário que é sempre bom ter a disposição.
+
+![Demo duf](/images/posts/turbo_terminal/duf_demo.png)
+
+## [code-radio-cli](https://github.com/JasonWei512/code-radio-cli)
+
+Sabia que seu terminal também pode tocar música? 
+Ele não só toca música como sintoniza com uma estação de rádio online para isso, quando vi isso pela primeira vez fiquei surpreso e acabei usando mais do que eu gostaria. 
+Como já disse, ele usa as músicas da [radio online do <BrandIcon brand="freecodecamp"/>freeCodeCamp](https://coderadio.freecodecamp.org), então a maioria das músicas são variações do LoFi (o que não é ruim), vale a pena você dar uma olhada se escuta música enquanto programa.
+
+![Demo code-radio-cli](/images/posts/turbo_terminal/code-radio-cli_demo.png)
+
+## lazydocker
+
+O <BrandIcon brand="docker"/>Docker é uma das ferramentas obrigatórias que todo desenvolvedor deve saber e se não sabe, procurar aprender. 
+Para quem já usa sabe sua importância mas ao mesmo tempo sabe que a CLI dele poderia ser melhor, principalmente para fazer as pessoas saírem do Docker Desktop e usar mais a CLI, até porque em servidores, não temos interface gráfica.
+
+Para facilitar este processo, o lazydocker torna mais fácil gerenciar contêineres, imagens, volumes, praticamente tudo, por uma simples TUI, mesmo quem já sabe a CLI prefere usar pelo lazydocker e não vou julgar, dependendo da tarefa pode ser sim mais rápido.
+
+![Demo lazydocker](/images/posts/turbo_terminal/lazydocker_demo.gif)
+
+# Menções honrosas
+
+Estas são ferramentas que já usei ou que me chamou atenção pela proposta e que acho bom mencionar.
+
+## [dune](https://github.com/adam-mcdaniel/dune)
+
+Este é um projeto que me impressionou bastante pela quantidade de coisas que você pode fazer. 
+`dune` é um shell assim como o [Bash](https://pt.wikipedia.org/wiki/Bash) no <BrandIcon brand="linux"/>Linux, mas o dune tem até sua própria linguagem com suporte a lambdas, macros e mais, além de uma biblioteca padrão bastante completa, mas o que pode chamar atenção é sua apresentação quando inicia, podendo ser customizado com frases, clima, calendário, hora, etc.
+
+<script async id="asciicast-441120" src="https://asciinema.org/a/441120.js"></script>
+*Apresentação do `dune` pelo próprio criador, veja o repositório do projeto no <BrandIcon brand="github"/>GitHub.*
+
+## [hyperfine](https://github.com/sharkdp/hyperfine)
+
+Este é bem nichado, mas bastante, ele mensura (benchmark) a os comandos do terminal, provendo estáticas de diferentes execuções, ao final ele mostra a media entre cada execução.
+
+![Demo hyperfine](/images/posts/turbo_terminal/hyperfine_demo.gif)
+
+## [lazygit](https://github.com/jesseduffield/lazygit)
+> Dos mesmos criadores de lazydocker, vem aí, lazygit.
+
+Este tem o mesmo propósito do lazydocker mas para o Git, a interface é bastante familiar para quem já usa. 
+O Git tem um propósito bem definido, mas que em cima disso, tem várias outras funcionalidades, então fica difícil de lembrar comandos além dos básicos, então vamos deixar isso para os GUI mas sem sair do terminal. 
+O lazygit torna rápido e intuitivo gerenciar um repositório local ou remoto, provendo as funcionalidades básicas e uma visualização que o Git (CLI) não provê para os commits.
+
+Pessoalmente não uso Git no terminal, uso o GitKraken ~~, btw~~ mas por costume de uma GUI, já que antes vinha usando o GitHub Desktop, mas vale a pena dá uma chance ao lazygit, principalmente se você usa o Git diariamente no terminal, pode tornar algumas tarefas mais rápida.
+
+![Demo lazygit](/images/posts/turbo_terminal/lazygit_demo.gif)
+*Apresentação do próprio repositório do projeto.*
+
+# Sugestões
+
+O blog não tem uma seção de comentários ainda, então você pode interagir na aba de discussões do GitHub no repositório de conteúdo do blog.
+
+Então se usa alguma ferramenta que não foi listada aqui, não deixe de citar por lá.
+
+***Peace✌️ & Merry Christmas🎄***
