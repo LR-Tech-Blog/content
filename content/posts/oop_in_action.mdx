@@ -1,0 +1,443 @@
+---
+id: "oop_in_action"
+title: "POO em ação: Construindo os pilares do paradigma - Parte 1"
+author: rog
+date: 2024-01-12
+draft: false
+tags: 
+- "oop_in_action"
+- "oop"
+- "java"
+- "abstraction"
+- "encapsulation"
+- "motion-canvas"
+postType: "Learn"
+description: "Vamos tentar uma abordagem diferente, ver os conceitos da POO por meio do “mão na massa”, quebrando cada exemplo em partes, explicando cada uma delas e esclarecendo algumas decisões de design, juntamente com algumas animações simples. Este é o primeiro post da série POO em ação."
+image: {
+    "src": "/images/posts/oop_in_action/oop_in_action.gif",
+    "alt": "Pixel Mood por Alwore (https://alwore.itch.io/pixel-mood)"
+}
+---
+import BrandIcon from "../../components/BrandIcon.astro"
+import DynamicImage from "../../components/DynamicImage.astro"
+
+Esta será uma série de posts que vou explicar todos os principais conceitos da POO (Programação Orientada a Objetos), mas só falar pode não ser o bastante para você entender, então, vou usar alguns exemplos simples juntamente com aparatos visuais para ajudar na compreensão.
+Espero que depois dessa série, você não sinta mais medo de linguagens OO e ao invés disso, use os conceitos a seu favor.
+
+# Tópicos abordados
+
+Nesta série, vamos usar o Java com <BrandIcon brand="openjdk"/>JDK 21 para criar os exemplos práticos, escolhi o Java por ser amplamente usado em várias áreas além de muitas faculdades ainda o usam para a disciplina de POO.
+
+Para quem está começando e não teve muito contato com outras linguagens, pode acabar tendo dificuldade de “traduzir” o que aprendeu em uma linguagem para outra, neste caso, levar os conceitos de POO para outra linguagem como <BrandIcon brand="csharp"/>[C#](https://learn.microsoft.com/pt-br/dotnet/csharp/tour-of-csharp), então, acho que o Java pode englobar o maior número de pessoas.
+
+Quero deixar claro que, se você está interessado em POO, então provavelmente já sabe os conceitos básicos sobre linguagem de programação, como declarações, funções, controle de fluxo e outros, se não, então provavelmente vai se sentir mais perdido que o resto, sugiro aprender, na teoria e na prática, estes conceitos antes de continuar, além disso, não vou focar em ensinar a sintaxe e peculiaridades do Java, o intuito aqui é ensinar POO.
+
+Durante a série, vamos abordar os seguintes tópicos:
+
+- Parte 1 - Construindo os pilares do paradigma (Abstração e Encapsulamento).
+- Parte 2 - Construindo os pilares do paradigma (Polimorfismo e Herança).
+- Parte 3 - Relacionamento é coisa séria: Relações entre objetos.
+- Parte 4 - A prática leva a perfeição: Fixando os conceitos da POO com mais prática.
+- Parte 5 - OO de forma inteligente: Os princípios S.O.L.I.D
+- Parte 6 - OO de forma inteligente: Aplicando Padrões de projeto (Design Pattern).
+- Parte 7 - A prática leva a perfeição 2: OO de forma inteligente com mais prática.
+- Parte 8 - OO para a vida: Os conceitos de uma perspectiva diferente.
+
+Esta será uma série bem longa e pode ser que tenha algumas partes mais longas que outras, mas peço que se você quer realmente aprender este paradigma, então acompanhe a série até o final, pois terá bastantes detalhes que pode ser uma dúvida ou dificuldade que você esteja enfrentando.
+
+Dentro destes tópicos vão estar alguns subtópicos que só serão revelados quando o post for ao ar, não ache que vamos falar somente do que está no título, até porque, o conteúdo seria bastante superficial.
+
+## O que é POO?
+
+Para quem está começando, pode parecer que existe uma resposta certa, mas essa pergunta é bem mais filosófica do que parece. 
+O intuito dessa série é inteiramente educacional, passando uma visão acadêmica do assunto, vai servir para você acompanhar durante a cadeira de POO na faculdade por exemplo, mas para não deixar você sem resposta, aqui vai uma definição bem superficial:
+
+> POO é uma forma de organizar seu código, permitindo agrupar partes em comum, a fim de melhorar a manutenção.
+
+Isso vale também para os pilares (vamos falar sobre eles mais a frente), já que definir eles também não é simples, encapsulamento por exemplo, não é exclusivo da POO, se pegar a definição dele, pode ser aplicado em programação funcional e procedural.
+
+Como disse, o intuito não é discutir a definição, é passar o conteúdo de forma clara, mas tenha isso em mente se quiser se aprofundar mais no assunto.
+
+Sem mais delongas, vamos começar com o conteúdo.
+
+# Um paradigma
+
+Paradigma de uma linguagem de programação é o que define suas principais características além de ditar a forma que ela é estruturada ou escrita no geral, algumas linguagens são criadas pensando em seguir à risca determinado paradigma, enquanto outras pode implementar vários conceitos de outros paradigmas, que é o que ocorre na maior parte das vezes, apenas algumas linguagens mais antigas implementam apenas um paradigma. 
+Alguns outros paradigmas além da POO:
+
+| Paradigma  | Características                                                                                                                               | Exemplos de linguagem            |
+|------------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| Imperativo | Consiste em “mandar” o que o computador deve executar exatamente; Mudança de estado por meio de declaração ou chamada de funções (procedures) | Basic; C; C++; Fortran           |
+| Funcional  | Mais próximo de conceitos da matemática determinística; suporte a lambdas; Recursão; Evita mudança de estado                                  | Clojure; F#; Lisp; Scala; Elixir |
+| Procedural | Muita influência de programação imperativa; Modularidade por meio de procedures; Escopo que permite declarações locais                        | C; Python; PHP; Lisp             |
+
+Estes são apenas alguns poucos exemplos de paradigmas que temos hoje, mas apesar de possuírem conceitos diferentes, eles têm uma característica em comum: Todas influenciaram o OO, implementando algumas características de cada um desses paradigmas de alguma forma.
+
+Linguagens que implementam OO pensa na programação como se fosse objetos colocados em código por meio de abstração do mundo real (mais sobre isso nas próximas seções), estes objetos têm propriedades/atributos, ou seja características em forma de informação, além de métodos, que são ações que um objeto pode executar.
+
+Note que algumas linguagens implementam mais de um paradigma, como C++, Java, Python, etc. Isso significa que você não é obrigado a usar somente POO ou somente imperativo ou o que for, você pode usar os dois (ou mais) ou só um.
+
+# Objetos ≠ Classe
+
+É fundamental deixar isso claro, uma classe é um molde para um objeto, um objeto é o que chamamos de instancia de uma classe, a partir de uma classe criamos um novo objeto, geralmente fazemos isso com a palavra-chave `new`, mas isso depende da linguagem, isso irá gerar um objeto concreto que podemos guardar em uma variável por exemplo e usar seus atributos e métodos que definimos na classe.
+
+<DynamicImage src="\images\posts\oop_in_action\class_object_light.gif" srcDark="\images\posts\oop_in_action\class_object_dark.gif"/>
+
+## Objetos e classes
+
+Uma classe é um modelo para um ou mais objetos, partir de uma classe, iremos criar um novo objeto, para clarificar, em POO, não é comum falar que “criamos um objeto” é mais certo dizer que “instanciamos um novo objeto” como falei no parágrafo da seção anterior. 
+Para tornar mais claro, uma classe define atributos e comportamentos de um objeto, em um exemplo prático em Java:
+
+```java
+public class Livro {
+    public String titulo;
+    public String autor;
+    public int anoPublicacao;
+    public int numbPaginas;
+}
+```
+*Livro.java*
+
+Esta é a forma de declarar uma classe em Java:
+
+1. Modificador de acesso. No nosso casso, é o `public` no começo, vou falar seu proposito quando chegar em encapsulamento.
+2. A palavra-chave `class`.
+3. O nome da classe. No nosso caso, é `Livro`.
+4. O corpo da classe delimitado por `{` e `}`.
+5. Dentro do corpo da classe, os membros que a compõem. No nosso caso, são somente os **atributos título**, autor, etc. Mas pode haver mais tipos de membros como métodos e até mesmo [outras classes](https://docs.oracle.com/javase/tutorial/java/javaOO/nested.html).
+
+Com essa classe criada, podemos finalmente instanciar nosso objeto:
+```java
+import Models.Livro;
+
+public class Main {
+    public static void main(String[] args) {
+        Livro livro = new Livro();
+    }
+}
+```
+
+A instanciação ocorre em `Livro livro = new Livro();`, onde definimos uma variável do tipo da classe que queremos instanciar, pois é isso que a variável vai conter um objeto do tipo `Livro`, para instanciar uma nova classe, usamos a palavra-chave `new`. 
+Note que apenas instanciarmos um novo `Livro` mas não fazemos nada com ele ainda, até aqui não definimos quais serão os valores das propriedades do livro.
+
+Para atribuirmos valores aos atributos do livro, podemos acessar todas as propriedades de um por um e atribuir um valor a eles:
+```java
+Livro livro = new Livro();
+livro.titulo = "Harry Potter e a Pedra Filosofal";
+livro.autor = "J. K. Rowling";
+livro.anoPublicacao = 1997;
+livro.numbPaginas = 255;
+```
+1. O acesso a qualquer propriedade é feita por meio do `.`, seguido do nome do atributo.
+
+Mas dessa forma temos a chance de criar um objeto sem valores em suas propriedades, pois depende de nós atribuirmos um de cada vez, e podemos acabar deixando um valor nulo sem querer. 
+Para corrigir isso, podemos criar um construtor na nossa classe:
+```java
+public class Livro {
+    public String titulo;
+    public String autor;
+    public int anoPublicacao;
+    public int numbPaginas;
+
+    public Livro(String titulo, String autor, int anoPublicacao, int numbPaginas) {
+        this.titulo = titulo;
+        this.autor = autor;
+        this.anoPublicacao = anoPublicacao;
+        this.numbPaginas = numbPaginas;
+    }
+}
+```
+Um construtor é um método que possui o mesmo nome da classe e não tem retorno na definição, mas o que são métodos?
+
+> 💡 A palavra-chave `this` é usada para referenciar a si mesmo, normalmente, sem o `this`, conseguimos acessar os métodos ou atributos da classe em que estamos, mas neste caso, os parâmetros que recebemos no construtor tem o mesmo nome dos atributos da classe, então ele não sabe de qual `titulo` estamos falando por exemplo, se é o atributo da classe ou se é o que estamos recebendo como parâmetro no construtor. Isso é chamado de shadowing e a palavra-chave `this` é bem útil para resolver isso.
+
+## Métodos
+
+De forma simples: Métodos são funções, só que em classes. A principal diferença está no começo, o modificador de acesso. Vamos incrementar nosso exemplo com uma funcionalidade, um atributo para guardar se o livro já foi lido ou não, assim:
+```java
+public class Livro {
+    public String titulo;
+    public String autor;
+    public int anoPublicacao;
+    public int numbPaginas;
+    private boolean lido;
+
+    public Livro(String titulo, String autor, int anoPublicacao, int numbPaginas) {
+        this.titulo = titulo;
+        this.autor = autor;
+        this.anoPublicacao = anoPublicacao;
+        this.numbPaginas = numbPaginas;
+        lido = false;
+    }
+
+    public void ler() {
+        lido = true;
+    }
+
+    public String jaFoiLido() {
+        return lido ? "Sim" : "Não";
+    }
+}
+```
+Note que a propriedade `lido` é `private` (vamos falar sobre isso na próxima seção) e não recebemos o valor dele pelo construtor, ao invés disso, ele será instanciado com esse valor, sempre como `false`, ou seja, um novo livro nunca será criado como já lido.
+
+Além disso criamos também dois novos métodos: `ler` e `jaFoiLido`, pois nossa propriedade `lido` é privado, então vamos esclarecer logo sobre modificadores de acesso.
+
+## Modificadores de acesso
+
+Eles são uma forma de garantir o nível de acesso que damos aos nossos componentes a componentes externos a ele.
+
+No Java temos 4 níveis de acesso:
+
+| Modificador                | Classe | Pacote | Subclasse | Mundo |
+|----------------------------|--------|--------|-----------|-------|
+| `public`                   | ✔️     | ✔️     | ✔️        | ✔️    |
+| `protected`                | ✔️     | ✔️     | ✔️        | ❌    |
+| *sem modificador (padrão)* | ✔️     | ✔️     | ❌        | ❌    |
+| `private`                  | ✔️     | ❌     | ❌        | ❌    |
+
+*Fonte: [Controlling Access to Members of a Class](https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html)*
+
+- Classe: Pode ser acessado na classe em que é declarado.
+- Pacote: Pode ser acessado no pacote em que é declarado
+- Subclasse: Pode ser acessado pelas classes filho de uma classe. Este está relacionado a herança.
+- Mundo: Pode ser acessado de qualquer lugar da aplicação, inclusive por pacotes externos a ele.
+
+> 💡 Vale ressaltar que o `private`, `protected`, não pode ser usado em declarações de alto nível, ou seja, apenas por membros de uma classe como atributos, métodos, *nested classes*, etc.
+
+### Por que fazer `lido` privado?
+
+Deixar a propriedade lido pública significa que quem vai usar a classe poderá colocar o valor que quiser, e eu quero que depois de colocar o valor de `lido` para `true` ele não possa mais voltar (ele não pode “desler” o livro), para garantir isso, eu posso limitar o acesso ao atributo por meio do `private`, e a única forma dele ser acessado é por meio de métodos, isso me dá a possibilidade de moldar a forma de como a classe pode ser usada.
+
+Além do método `ler`, criei um outro método chamado `jaFoiLido`:
+```java
+public String jaFoiLido() {
+    return lido ? "Sim" : "Não";
+}
+```
+Simplesmente porque não quero que quem for usar a classe, acesse a informação de forma mais humanizada, ao invés de retornar `true` ou `false`, retorne Sim ou Não.
+
+## Moldando o uso da classe
+
+Voltando para o método `main`, onde nossa classe está sendo usada, vemos que mesmo depois de criarmos o construtor, ainda estamos usando a forma antiga (colocando os valores de um por um, para cada atributo), então vamos usar o construtor:
+```java
+public static void main(String[] args) {
+    Livro livro = new Livro("Harry Potter e a Pedra Filosofal", "J. K. Rowling", 1997, 255);
+}
+```
+
+Os parênteses que antes eram vazios (pois não tínhamos construtor) agora DEVEMOS passar todos os valores que recebemos no construtor, caso contrário ele nem sequer irá compilar, ou seja, não conseguimos instanciar a classe sem passar os valores que requisitamos.
+
+Caso tente acessar o título do livro pela propriedade `titulo`, você irá conseguir sem problemas, já que o atributo é público na classe:
+```java
+Livro livro = new Livro("Harry Potter e a Pedra Filosofal", "J. K. Rowling", 1997, 255);
+
+System.out.printf("Titulo do livro: %s", livro.titulo);
+```
+Mas isso significa que o atributo também pode ser modificado, e eu não quero que o livro mude depois que é criado, isso vale também para as outras propriedades como `autor`, `anoPublicacao` e `numbPaginas`. 
+Para prevenir isso, vamos criar o que chamamos de Getter e Setter.
+
+## Getter e Setter
+
+Estes são métodos que criamos para manter o controle de acesso dos atributos das nossas classes, métodos Get são usados para recuperar valor de um atributo, enquanto o Set é usado para atribuir valor ao atributo. 
+A criação deles não é obrigatória para todo atributo, você os cria de acordo com a necessidade, inclusive, você pode criar apenas um Get, sem um Set, para um atributo, para assim garantir a imutabilidade.
+
+Para controlar o acesso aos nossos atributos somente por meio dos Get e Set, vamos tornar todos os atributos privados:
+```java
+public class Livro {
+    private String titulo;
+    private String autor;
+    private int anoPublicacao;
+    private int numbPaginas;
+    private boolean lido;
+
+    public Livro(String titulo, String autor, int anoPublicacao, int numbPaginas) {
+        this.titulo = titulo;
+        this.autor = autor;
+        this.anoPublicacao = anoPublicacao;
+        this.numbPaginas = numbPaginas;
+        lido = false;
+    }
+
+    public void ler() {
+        lido = true;
+    }
+    public String jaFoiLido() {
+        return lido ? "Sim" : "Não";
+    }
+}
+```
+Lembrando, eu não quero que, depois de criado, o `titulo`, `autor`, `anoPublicacao` e `numbPaginas` não sejam mais modificados, então para estes vamos criar apenas um Get:
+```java
+public String getTitulo() {
+    return titulo;
+}
+
+public String getAutor() {
+    return autor;
+}
+
+public int getAnoPublicacao() {
+    return anoPublicacao;
+}
+
+public int getNumbPaginas() {
+    return numbPaginas;
+}
+```
+Os Get devem ser públicos para que eles possam ser acessados de fora da classe. 
+É uma prática comum os métodos Get terem o prefixo get depois o nome do atributo em CamelCase, é importante ressaltar que o tipo de retorno da maioria dos métodos Get são os memos de seus respectivos atributos, se não são, então antes de retornar performam algum tipo de conversão.
+
+Para demonstrar o método Set vou criar um novo atributo na classe chamado `editora`, onde este vai ter um Get e um Set:
+
+```diff
+//...
+private String autor;
++private String editora;
+private int anoPublicacao;
+//...
+//...
+public String getAutor() {
+    return autor;
+}
+
++public String getEditora() {
++    return editora;
++}
+
++public void setEditora(String editora) {
++    this.editora = editora;
++}
+
+public int getAnoPublicacao() {
+    return anoPublicacao;
+}
+///...
+```
+*Livro.java*
+
+Da mesma forma do get, os métodos Set também possuem o prefixo set seguido do nome do atributo em CamelCase, mas o Set não tem retorno, pois a função dele é atribuir um novo valor a uma propriedade, este novo valor é recebido no parâmetro do método.
+
+Agora nossa classe `Livro` está dessa forma:
+```java
+public class Livro {
+    private String titulo;
+    private String autor;
+    private String editora;
+    private int anoPublicacao;
+    private int numbPaginas;
+    private boolean lido;
+
+    public Livro(String titulo, String autor, String editora, int anoPublicacao, int numbPaginas) {
+        this.titulo = titulo;
+        this.autor = autor;
+        this.editora = editora;
+        this.anoPublicacao = anoPublicacao;
+        this.numbPaginas = numbPaginas;
+        lido = false;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public String getAutor() {
+        return autor;
+    }
+
+    public String getEditora() {
+        return editora;
+    }
+
+    public void setEditora(String editora) {
+        this.editora = editora;
+    }
+
+    public int getAnoPublicacao() {
+        return anoPublicacao;
+    }
+
+    public int getNumbPaginas() {
+        return numbPaginas;
+    }
+
+    public void ler() {
+        lido = true;
+    }
+
+    public String jaFoiLido() {
+        return lido ? "Sim" : "Não";
+    }
+}
+```
+
+Perceba que os métodos `ler` e `jaFoiLido` são uma espécie de Get e Set, onde o `ler` é o Set e o `jaFoiLido` é o Get, mas como não quero que o usuário coloque qualquer valor no `lido`, então é um Set que somente muda o valor para `true`, enquanto o `jaFoiLido`, performa um tipo conversão antes de retornar, isso não deixa de ser um Get e Set.
+
+Agora vamos atualizar nossa `main`:
+```java
+public class Main {
+    public static void main(String[] args) {
+        Livro livro = new Livro("Harry Potter e a Pedra Filosofal", "J. K. Rowling", "Bloomsbury", 1997, 255);
+
+        String tituloMensagem = String.format("Titulo do livro: %s", livro.getTitulo());
+        String autorMensagem = String.format("Autor do livro: %s", livro.getAutor());
+        String editoraMensagem = String.format("Editora do livro: %s", livro.getEditora());
+        String anoPublicacaoMensagem = String.format("Ano de publicação do livro: %s", livro.getAnoPublicacao());
+        String numbPaginasMensagem = String.format("Número de páginas do livro: %s", livro.getNumbPaginas());
+
+        System.out.println(tituloMensagem);
+        System.out.println(autorMensagem);
+        System.out.println(editoraMensagem);
+        System.out.println(anoPublicacaoMensagem);
+        System.out.println(numbPaginasMensagem);
+
+        System.out.println("Modificando Editora...");
+        livro.setEditora("Scholastic");
+
+        editoraMensagem = String.format("Nova editora do livro: %s", livro.getEditora());
+        System.out.printf(editoraMensagem);
+    }
+}
+```
+*Saida:*
+```
+Titulo do livro: Harry Potter e a Pedra Filosofal
+Autor do livro: J. K. Rowling
+Editora do livro: Bloomsbury
+Ano de publicação do livro: 1997
+Número de páginas do livro: 255
+Modificando Editora...
+Nova editora do livro: Scholastic
+```
+
+# Pilares da POO
+
+A partir daqui vamos falar sobre a POO e que faz dela tão especial, começando sobre o que molda a forma que programamos nas linguagens que implementam. 
+No geral temos quatro pilares que devemos sempre ter em mente quando mexemos com POO: Abstração, encapsulamento, polimorfismo e herança. 
+Até aqui vimos apenas abstração e encapsulamento, então vou esclarecer apenas estes conceitos, no próximo post, começo falando sobre os outros dois e incrementamos este nosso exemplo que fizemos até aqui.
+
+## Abstração
+
+Esta diz respeito ao que você modela para dentro do seu software, pegar algo do mundo real e colocar no seu programa, no nosso exemplo abstraímos um livro, criando a classe com seus atributos (propriedades) e ações (métodos). 
+Você pode ter notado que nem toda informação que tem em um livro tem na nossa classe, isso simplesmente porque não precisamos delas, você pode ter se lembrado de ISBN, gênero, idioma, etc. Mas queria deixar o exemplo simples, então coloquei apenas o que achei necessário.
+
+Aplicar este conceito envolve muito do domino que está trabalhando, isso é, a área em que seu software está relacionado, ele representa os requisitos e desafios que seu software deve ter e solucionar, então, saber abstrair do mundo real para seu programa é crucial para criar uma solução efetiva.
+
+<DynamicImage src="\images\posts\oop_in_action\abstraction_light.gif" srcDark="\images\posts\oop_in_action\abstraction_dark.gif" />
+
+## Encapsulamento
+
+Não pense que encapsulando os membros do nosso programa vamos fazer dele mais seguro, encapsulamento é sobre acesso e controle, ele dá ao programador uma forma de moldar a forma de usar uma classe que criamos por meio de permissões. 
+Pode não parecer grande coisa, mas isso é bastante usado na criação de pacotes ou quando estamos trabalhando em equipe, onde devemos expor para eles apenas o que queremos que eles acessem, dessa forma, podemos dificultar o uso indevido da classe.
+
+<DynamicImage src="\images\posts\oop_in_action\encapsulation_light.gif" srcDark="\images\posts\oop_in_action\encapsulation_dark.gif" />
+
+# Continuação
+
+O exemplo que criamos é bastante simples e pode não ter muito do que tirar dele, mas vamos incrementar ele com mais conceitos nos próximos posts, que caso tenha pulado, na seção Tópicos abordados tem os futuros assunto que vamos abordar.
+
+Se quiser conferir o código que será escrito durante a série, aqui está o link:
+
+[OOPInAction](https://github.com/LuanRoger/OOPInAction)
+
+***Peace✌️ & Happy `new Year(2024)`🎆***
