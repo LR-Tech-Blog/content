@@ -1,0 +1,379 @@
+---
+id: "oop_in_action2"
+title: "POO em ação: Construindo os pilares do paradigma - Parte 2"
+author: rog
+date: 2024-03-01
+draft: false
+tags: 
+- "oop"
+- "java"
+- "inheritance"
+- "polymorphism"
+- "oop_in_action"
+postType: "Learn"
+description: "Vamos explorar os outros dois principais conceitos que constroem a POO, herança e polimorfismo são dois conceitos que estão bastantes relacionados."
+image: {
+    src: "/images/posts/oop_in_action2/oop_in_action2.jpg",
+    alt: "Everybody in florest - Chrono Trigger",
+    href: "https://wallpaperflare.com/video-game-chrono-trigger-wallpaper-yntbj"
+}
+---
+import DynamicImage from "../../components/DynamicImage.astro"
+
+# Temas abordados:
+
+- ✔️ Parte 1 - Construindo os pilares do paradigma (Abstração e Encapsulamento).
+- ➡️ Parte 2 - Construindo os pilares do paradigma (Polimorfismo e Herança).
+- Parte 3 - Relações entre objetos.
+- Parte 4 - Fixando os conceitos da POO com mais prática.
+- Parte 5 - Os princípios S.O.L.I.D
+- Parte 6 - Aplicando [Padrões de projeto](https://pt.wikipedia.org/wiki/Padr%C3%A3o_de_projeto_de_software) (Design Pattern).
+- Parte 7 - OO de forma inteligente com mais prática.
+- Parte 8 - OO para a vida: Os conceitos de uma perspectiva diferente.
+
+# Por que herança e polimorfismo estão juntos?
+
+Decidi por herança e polimorfismo juntos porque eles são complemento um do outro.
+Ambos têm o mesmo propósito, reusar código.
+
+Mas não pense que somente esses dois têm relação, a herança vai tornar a abstração e o encapsulamento mais complexos, então se você ainda não viu o post anterior, sugiro que leia antes de continuar.
+
+## Herança
+
+O conceito da herança toma muito da biologia:
+A herança permite que uma classe possa recusar ou modificar definições de outra classe. As definições que digo são os membros da classe (atributos e métodos), mas não só isso, porque você também pode sobrescrever alguns deles, isso está mais para o conceito de polimorfismo, então primeiro, vamos explorar a herança.
+
+### Superclasses e subclasses
+
+Como vimos, herança reusa código de outra classe, então precisamos ter no mínimo duas classes, vamos criar nossas classes também seguindo um pouco da biologia:
+```java
+public class Animal {
+    private String nome;
+
+    public Animal(String nome) {
+        this.nome = nome;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+}
+```
+Como vimos anteriormente, podemos criar um objeto a partir dela dá usando o `new`:
+
+```java
+Animal animal = new Animal("Cachorro");
+```
+Dessa forma, podemos ter quantos animais quiser, agora vamos criar o método `fazerBarulho`:
+
+```java
+public void fazerBarulho() {
+	System.out.println("???");
+}
+```
+Mas como vamos saber de qual animal estamos lidando?
+
+> Podemos ler do atributo `nome` e criar um `if`/`else` ou `switch` para cada possibilidade.
+
+Isso seria muito difícil de cobrir cada caso, além de muito difícil de manter, além disso, isso não vai nos permitir de ter ações específicas para cada tipo de animal, por exemplo, se for uma ave, ter um método voar (sei que nem toda ave voa, mas vamos considerar que sim para simplificar nosso exemplo).
+
+Perceba que ter um animal é muito abstrato, mais do que o exemplo do `Livro` na parte anterior, precisamos de algo mais específico, vamos usar a classe `Animal` para criar uma outra classe que seja mais específica que ela, podemos começar com a ave, então:
+```java
+public class Ave extends Animal {
+    public Ave(String nome) {
+        super(nome);
+    }
+}
+```
+
+Para herdar de uma outra classe usamos a palavra-chave `extends`, seguido do nome da classe que queremos herdar, neste caso estamos criando a classe `Ave` que herda de `Animal`.
+Perceba que Ave já tem um construtor (método com o mesmo nome da classe e sem retorno declarado), nele recebemos uma `String nome` e logo passamos para `super`, mas o que é este `super`?
+
+Da mesma forma que o `this` faz referência a nossa classe atual (`Ave`), o `super` faz referência a nossa superclasse, a classe de quem somos subclasse. Agora:
+- `Ave` é subclasse de `Animal`.
+- `Animal` é superclasse de `Ave`.
+
+Quando uma classe herda de outra, o que acontece com a subclasse:
+- Declarar novos atributos que não estão na superclasse;
+- Criar novos métodos que não fazem parte da superclasse;
+- Membros não privados da superclasse podem ser usados na subclasse;
+- A subclasse pode chamar o construtor da superclasse.
+
+A nossa classe `Animal` tem um construtor que possui parâmetros, lembre-se que só podemos criar um objeto pelo construtor, mesmo que a nossa classe `Animal` esteja “escondida” pela classe `Ave` ainda devemos chamar o seu construtor, até porque tudo que tem `Animal` faz parte de `Ave`, para chamar o construtor da nossa superclasse simplesmente usamos a palavra-chave `super` e passamos os parâmetros nos parênteses, semelhante a instanciar, como só temos o parâmetro `nome` em `Animal` então é só isso que devemos passar.
+
+Vale ressaltar que somente membros com modificadores de acesso mais permissivos que `private` podem ser acessados nas subclasses, ou seja, em `Animal`, não podemos acessar diretamente o atributo `nome`, por hora, apenas `getNome` e `fazerBarulho`, o que não é um problema para nós agora. Antes de continuar com a resolução do nosso problema do método `fazerBarulho`, vamos resolver um pequeno detalhe.
+
+## Classes abstratas
+
+Note que animal ainda pode ser instanciado, mas como havia dito anteriormente, esta classe é bastante abstrata para ser usada sozinha, pois não sabemos qual animal especificamente estamos lidando, então podemos fazer dela uma classe abstrata da seguinte forma:
+```java
+public abstract class Animal { /*...*/ }
+```
+Tornar a classe abstrata significa que ela não pode mais ser instanciada, somente herdada, isso vai nos garantir que só existirão subclasses de `Animal` e nunca somente `Animal`.
+
+### Métodos abstratos
+
+Para resolver nosso problema com o método `fazerBarulho`, podemos torná-lo abstrato também, da seguinte forma:
+```java
+public abstract void fazerBarulho();
+```
+
+Isso significa que o método **DEVE** ser implementada nas subclasses que virão, pois perceba que `fazerBarulho` não tem mais implementação na classe `Animal`.
+Isso vai nos permitir criar uma implementação específica para os animais, assim cada um deles pode fazer um barulho diferente.
+
+Até agora, nossa classe animal está assim:
+```java
+public abstract class Animal {
+    private String nome;
+
+    public Animal(String nome) {
+        this.nome = nome;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public abstract void fazerBarulho();
+}
+```
+
+Agora vamos criar uma implementação para o método `fazerBarulho` na classe `Ave`:
+```java
+@Override
+public void fazerBarulho() {
+    System.out.println("Piu?");
+}
+```
+
+> 💡 Note a anotação `@Override` no topo do método, isso indica ao compilador que o membro em questão deve ser sobrescrever o membro declarado na superclasse.
+
+Mas que ave exatamente estamos nos referindo, bem, a classe `Ave` ainda parece ser bastante abstrata, pois não sabemos ainda exatamente com qual ave estamos lidando.
+O que podemos fazer é criar um `if`/`else` verificando o nome da ave, mas como disse, esta forma não é simples de manter e muito menos escalável, então agora vamos criar uma implementação concreta da nossa classe `Ave`.
+
+Mas antes, vamos marcar a classe Ave como abstrato e colocar algumas propriedades que somente aves possuem para diferenciar dos outros animais, além disso, vamos remover a implementação de `fazerBarulho` da classe `Ave`, então nossa classe ficará assim no final:
+```java
+public abstract class Ave extends Animal {
+    public boolean podeVoar;
+    public Ave(String nome, boolean podeVoar) {
+        super(nome);
+        this.podeVoar = podeVoar;
+    }
+}
+```
+> Mas porque remove o método `fazerBarulho` se você disse que ele **DEVE** ser implementado?
+
+A classe `Ave` agora é uma classe abstrata, o que significa que ela foi criada para ser herdada e não pode ser instanciada, os membros abstratos são opcionalmente implementados em classes abstratas, mas devem ser implementadas em classes concretas (aquelas que serão instanciadas).
+Como nossa classe `Ave` agora é abstrata, então não precisamos sobrescrever os membros abstratos da nossa classe pai agora.
+
+## Implantação concreta
+
+Seguindo, vamos agora criar a nossa classe concreta que herda de `Ave`:
+
+Começando pelo construtor:
+```java
+public Galinha() {
+    super("Galinha", false);
+}
+```
+
+Note que o super faz referência a classe `Ave`, então no construtor devemos chamar o `super` no nosso construtor tendo isso em mente.
+Veja também que, `Galinha` não recebe parâmetros, isso porque agora, podemos inferir todos os parâmetros que a nossa superclasse recebe, e como não criei nenhuma nova propriedade para `Galinha` então não há nada que queiramos receber.
+Vale ressaltar que nem todo case será desta forma, isso aconteceu apenas por conta da forma que abstraímos as nossas classes.
+
+Agora para a implementação do método `fazerBarulho`:
+```java
+@Override
+public void fazerBarulho() {
+    System.out.println("Co Co");
+}
+```
+Agora que temos finalmente uma implementação concreta da nossa classe e dos nossos membros.
+
+A classe Galinha ficou da seguinte forma:
+```java
+public class Galinha extends Ave {
+    public Galinha() {
+        super("Galinha", false);
+    }
+
+    @Override
+    public void fazerBarulho() {
+        System.out.println("Co Co");
+    }
+}
+```
+Vamos instanciar nossa classe e chamar o método `fazerBarulho`:
+```java
+Galinha ave = new Galinha();
+animal.fazerBarulho();
+```
+*Saida:*
+```
+Co Co
+```
+
+## Classes e tipos
+
+> `Galinha` herdade de `Ave` que por sua vez herda de `Animal`, isso faz de uma instancia de `Galinha` uma instancia de `Animal` também?
+
+Sim, um objeto pode ter múltiplos tipos dependendo de sua hierarquia, isso significa que que um objeto do tipo `Galinha` também é do tipo `Ave` e `Animal`. Em um exemplo:
+
+Podemos fazer:
+```java
+Animal animal = new Galinha();
+```
+pois `Galinha` herda de `Animal`. Mas temos uma ressalva:
+
+Apesar de nossa variável guardar uma instancia de `Galinha`, o tipo dela é `Animal`, o que significa que só teremos acesso aos membros do tipo `Animal`.
+Isso significa que se quiséssemos acessar o `podeVoar`, não vamos conseguir, pois esta é uma propriedade de `Galinha`.
+
+Isso é útil quando queremos acessar apenas os membros de um tipo mais abstrato.
+Vamos fazer um exemplo com o tipo `Ave`.
+
+Primeiro vou criar uma nova classe que implementa `Ave`, seguindo a mesma forma de `Galinha`:
+```java
+public class Gaviao extends Ave {
+
+    public Gaviao() {
+        super("Gavião", true);
+    }
+
+    @Override
+    public void fazerBarulho() {
+        System.out.println("AAA AAA");
+    }
+}
+```
+Agora vou criar um método na classe `Main`:
+```java
+private void consegueVoar(Ave ave) {
+  String podeVoarMessage = String.format("%s pode voar", ave.getNome());
+  String nPodeVoarMessage = String.format("%s não pode voar", ave.getNome());
+
+  if(ave.podeVoar) {
+      System.out.println(podeVoarMessage);
+      return;
+  }
+
+  System.out.println(nPodeVoarMessage);
+}
+```
+Veja que este método recebe uma variável do tipo `Ave`, isso significa que podemos passar qualquer classe/tipo que herde de `Ave`, pois vamos usar apenas os membros deste tipo.
+```java
+public static void main(String[] args) {
+    Ave galinha = new Galinha();
+    Ave gaviao = new Gaviao();
+
+    consegueVoar(galinha);
+    consegueVoar(gaviao);
+}
+```
+*Saida:*
+```
+Galinha não pode voar
+Gavião pode voar
+```
+
+<DynamicImage src="/images/posts/oop_in_action2/classes_example-light.gif" srcDark="/images/posts/oop_in_action2/classes_example-dark.gif"/>
+
+## E o polimorfismo?
+
+O polimorfismo na OO, é a forma que uma subclasse pode definir seu próprio comportamento e compartilhar alguma funcionalidade da sua superclasse.
+
+Para você que ainda não percebeu, foi exatamente o que fizemos nos exemplos acima, onde fica ainda mais claro o que fizemos no método `fazerBarulho`, onde a classe `Animal` define apenas a assinatura e suas subclasses devem criar sua própria implementação deste método.
+
+Veja que herança e polimorfismo estão tão relacionados que acabamos implementando os dois conceitos sem perceber, de forma natural, um acontece por causa do outro.
+
+## Interfaces
+
+Em alguns casos, não necessitamos de uma nova classe para definir um comportamento para nossa classe, as interfaces são uma forma de definir um “contrato” para as classes que implementam ela, uma interface dita como usamos uma classe especificamente, se assemelha bastante com o que fazemos com classes abstratas, inclusive, interfaces também não podem ser instanciadas, mas ao contrário delas, as interfaces só devem conter assinaturas de métodos como membros, variáveis e campos não são permitidos.
+Vamos começar outro exemplo.
+
+### Situação
+
+Estou criando um sistema que pode ser integrado com outros, para tornar a tarefa de integração fácil para quem irá usar, vamos criar uma interface, como dito, isso irá firmar uma espécie de contrato para com meu sistema e quem irá implementar fazer de forma correta.
+
+Então vamos criar nossa interface:
+```java
+public interface SistemaUniversal {
+    void verTodosUsuario();
+    void criarUsuario(String nome);
+    void deletarUsuario(String nome);
+    void atualizarUsuario(String nomeAtual, String novoNome);
+}
+```
+A interface `SistemaUniversal` define apenas as assinaturas dos métodos que será usado tanto para quem vai implementar a interface quanto para quem vai usar.
+Uma interface contém apenas assinaturas dos métodos, mas nunca sua implementação, pois isso será definido pela classe que irá implementá-lo, coisa que iremos fazer agora:
+
+Primeiro devemos definir que esta classe irá implementar a interface com a palavra-chave `implements`:
+
+```java
+public class Sistema1 implements SistemaUniversal { /*...*/ }
+```
+
+Agora, **DEVEMOS** implementar todos os métodos que definimos na interface:
+```java
+public class Sistema1 implements SistemaUniversal {
+    private final ArrayList<String> usuarios;
+
+    public Sistema1() {
+        this.usuarios = new ArrayList<String>();
+    }
+
+    @Override
+    public void verTodosUsuario() {
+        for (final String usuario : usuarios) {
+            System.out.println(usuario);
+        }
+    }
+
+    @Override
+    public void criarUsuario(String nome) {
+        usuarios.add(nome);
+    }
+
+    @Override
+    public void deletarUsuario(String nome) {
+        usuarios.remove(nome);
+    }
+
+    @Override
+    public void atualizarUsuario(String nomeAtual, String novoNome) {
+        final int toUpdateIndex = usuarios.indexOf(nomeAtual);
+        usuarios.remove(nomeAtual);
+        usuarios.add(toUpdateIndex, novoNome);
+    }
+}
+```
+
+- `verTodosUsuario`: Exibe cada elemento da lista de usuários.
+- `criarUsuario`: Adiciona o valor que recebemos pelo parâmetro na lista de usuários.
+- `deletarUsuario`: Remove o usuário da lista pelo valor.
+- `atualizarUsuario`: Recebe um parâmetro contendo o nome atual do usuário que terá seu nome atualizado e o novo nome, pega o index de onde este nome de usuário se encontra, remove ele, e insere o novo nome no mesmo local que o antigo.
+
+Agora temo um sistema que implementa a interface `SistemaUniversal`.
+
+Assim como uma classe, uma interface também pode ser um tipo, então da mesma forma que fizemos com `Ave`, vamos fazer com `SistemaUniversal`:
+```java
+public static void main(String[] args) {
+    SistemaUniversal sistemaUniversal = new Sistema1();
+    sistemaUniversal.criarUsuario("Roger");
+    sistemaUniversal.verTodosUsuario();
+}
+```
+*Saida:*
+```
+Roger
+```
+Da mesma forma do exemplo anterior, desta forma temos acesso somente ao que declaramos em `SistemaUniversal`, mas dependendo do real tipo que temos na variável (tipo durante o runtime) o comportamento pode mudar.
+
+# Conclusão
+
+Os dois assuntos, herança e polimorfismo estão tão relacionados que até mesmo o propósito dos dois são os mesmos, reusar código.
+Antes de um exemplo mais elaborado, juntando todos estes conceitos básicos, devemos dar uma rápida olhada sobre relacionamento entre objetos, que abordaremos no próximo post.
+
+Como sempre, o código que vimos aqui está disponível no repositório abaixo:
+- [Repositório](https://github.com/LuanRoger/OOPInAction/tree/part2)
+
+***Peace ✌️***
