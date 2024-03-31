@@ -1,0 +1,489 @@
+---
+id: "notion_cms_blog"
+title: "Usar o Notion como CMS: Criando um blog"
+author: rog
+date: 2024-04-01
+draft: false
+tags: 
+- "notion"
+- "cms"
+- "blog"
+- "astro"
+- "react"
+- "typescript"
+postType: "Tutorial"
+description: "Criar um blog pode envolver vários serviços dependendo da complexidade, mas vou mostrar que para gerenciar o conteúdo dele não precisa ter dor de cabeça, você pode usar o Notion para escrever e publicar suas postagens."
+image: {
+    "src": "/images/posts/notion_cms_blog/notion_cms_blog.jpg",
+    "alt": "Foto de Nat na Unsplash",
+    "href": "https://unsplash.com/pt-br/fotografias/uma-imagem-abstrata-de-linhas-azuis-e-vermelhas-Z0vdRzr_iZM?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash"
+}
+---
+import BrandIcon from "../../components/BrandIcon.astro"
+
+O <BrandIcon brand="notion"/> Notion pode ser usado para todo tipo de tarefa que envolve produtividade, como organizar suas tarefas, acompanhar projetos, gerenciar times, fazer anotações e mais. Mas o que muitos não sabem é que ele tem uma API que podemos usar para criar todo tipo de integração usando o Notion como “gerenciador”.
+
+Antes de partir para a implementação e falar sobre as tecnologias que usaremos, vamos ver como esta API do Notion funciona e como podemos deixá-la pronta para usar, vou partir do princípio de que você conhece o Notion e já tenha uma conta criada na plataforma, juntamente com um workspace.
+
+Para deixar todos na mesma página, vou falar rapidamente o que significa CMS.
+Ele é o acrônimo para sistema de gerenciamento de conteúdo (em inglês Content Management System), este tipo de sistema é comumente usados para gerenciar o conteúdo de algum site, servindo como fonte de acesso a informações de uma determinada plataforma, como por exemplo um blog, site de notícias ou qualquer outro tipo de site que seja fortemente dirigido a conteúdo. 
+Sendo o CMS mais famoso o <BrandIcon brand="wordpress"/> [WordPress](https://br.wordpress.org).
+
+# API do Notion
+
+Para ter acesso a API temos que acessar o [site para desenvolvedores do Notion](https://developers.notion.com), depois entre com a sua conta padrão do Notion, em seguida vá em “Minhas Integrações” no canto superior direito da página (ou [clique aqui](https://www.notion.so/my-integrations)).
+
+Agora crie uma integração, que com isso, ele irá te gerar a chave para acessarmos do nosso front-end.
+No primeiro momento, ele irá pedir somente o nome da integração e o workspace (o tipo deixe interno mesmo), certifique-se de que o workspace que está selecionado é o que irá conter o [banco de dados](https://www.notion.so/help/guides/creating-a-database) que irá conter as postagens do blog. 
+No final você terá uma integração criada, que nela irá conter a chave da API para acessarmos posteriormente.
+
+![Notion's My integrations page](/images/posts/notion_cms_blog/my_integrations.png)
+
+Vamos fazer algumas configurações extras depois da integração está criada:
+
+- Definir que a integração terá acesso de somente leitura - Isso pode ser feito entrando na integração > Acessando a aba de “Capacidades” > Desabilitando a opção “Atualizar conteúdo” e “Inserir conteúdo”
+- Definir que não precisamos do e-mail do usuário - Para isso, na mesma aba de “Capacidades”, marque a opção “Ler informações sem endereço de e-mail”
+
+Assim vamos garantir que, caso nossa chave da API seja exposta, ela não possa ser usada para nada além de ler conteúdo, enquanto a segunda opção irá facilitar a nossa integração com o front.
+
+## Criar o banco de dados
+
+Agora vamos ao Notion para criar o banco de dados que irá conter as nossas postagens.
+
+Para criar um banco de dados, siga estes passos no Notion:
+
+1. Crie uma página
+2. No conteúdo da página, digite `/database` e selecione qualquer tipo de visualização
+3. Pronto
+
+Você deve ter algo parecido com isto:
+
+![Posts database](/images/posts/notion_cms_blog/posts_database.png)
+
+Sobre as propriedades, isso fica a seu gosto, você pode criar as propriedades que você quiser, mas tenha em mente que aqui iremos cobrir apenas cobrir apenas este caso em específico, então cabe a você implementar as propriedades específicas que você criou no seu front-end.
+
+As propriedades que vou criar são as seguintes:
+
+- Nome
+- Status - Com os possíveis valores: Backlog, Rascunho, Publicado
+- Tipo
+
+Vale ressaltar a importância da propriedade “Status”, pois é com ela que vamos definir se nossa postagem está postada ou não (em rascunho). O “Nome” é o título da postagem e o “Tipo” é a categoria do post (ex. Tutorial, Showcase, Artigo, etc.).
+
+Agora um passo muito importante, devemos autorizar a integração a ter acesso ao banco de dados do Notion que acabamos de criar, para isso você pode seguir os seguintes passos:
+
+1. Entre no banco de dados (em visualizações na página inteira)
+2. Clique nos três pontos no canto superior direito
+3. Em conexões, selecione “Adicionar conexão”, a partir daí, já vai aparecer a integração que criamos.
+
+![Notion's connections](/images/posts/notion_cms_blog/notion_connections.png)
+
+No final, vamos ter um banco de dados no Notion pronto para conseguirmos entregar com ele. Agora vamos criar finalmente nosso front-end para integrar com esta API.
+
+# Projeto
+
+Para integrar com o Notion, vamos criar um site em <BrandIcon brand="astro"/> Astro e <BrandIcon brand="react"/> React e <BrandIcon brand="typescript"/> Typescript principalmente, então é importante que você já tenha algum conhecimento nestas tecnologias, mas se você está aqui apenas para ver como a integração é feita, fique à vontade, mas a metodologia aqui será bastante prática.
+
+Se você quer saber mais como o Astro funciona, tenho um post falando da criação deste blog que você está agora, onde ele foi feito com Astro, então se quiser saber mais sobre ele, acesse [este post](https://lrtechblog.vercel.app/post/blog_sweet_blog).
+
+## Inicialização
+
+Para iniciar o um projeto em Astro, podemos usar o comando a seguir para executar o assistente de instalação:
+
+```bash
+npm create astro@latest
+```
+Depois de tudo feito, vamos adicionar a integração com o React para o Astro, para isso podemos usar outro assistente com o seguinte comando:
+
+```bash
+npx astro add react
+```
+
+O Notion possui um cliente oficial para Typescript no <BrandIcon brand="npm"/> NPM, vamos usar para tornar nossa experencia de desenvolvimento mais tranquila:
+
+```bash
+npm i notion-client
+```
+
+> Caso queira saber das capacidades do cliente, acesse a [página do pacote no NPM](https://www.npmjs.com/package/notion-client).
+
+Pronto agora temos tudo que precisamos para começar.
+
+## Integração com o Notion
+
+Para aqueles que querem apenas saber como é feita a integração com o Notion, vamos falar sobre ela primeiro antes de tocar na UI.
+
+Como vamos mexer com chaves de API, que são sensíveis, teremos que criar um arquivo <BrandIcon brand="dotenv"/> `.env` para termos todas as nossas variáveis de ambientes seguras, certifique de não mandar este arquivo para qualquer repositório <BrandIcon brand="git"/> Git.
+
+Então o que gosto de fazer é criar um arquivo `.env.example` para servir como base para o meu arquivo `.env` concreto, para este projeto, criei o seguinte arquivo de exemplo:
+
+```env
+NOTION_SECRET=<your notion secret>
+NOTION_DATABASE_ID=<your notion database id>
+
+STATUS_PROPERTY=Status
+BACKLOG_STATUS=Backlog
+DRAFT_STATUS=Rascunho
+PUBLISHED_STATUS=Publicado
+
+POST_TITLE_PROPERTY=Name
+POST_TYPE_SELECT_PROPERTY=Tipo
+```
+
+- `NOTION_SECRET`: Sua chave da API do Notion. Pode ser copiada da página da integração.
+- `NOTION_DATABASE_ID`: Identificador do seu banco de dados do Notion. Você pode vê-lo ao acessar a página do banco de dados (visualização da página inteira), na barra de endereço. Está no seguinte formato: https://www.notion.so/{`NOTION_DATABASE_ID`}?v=…
+- `STATUS_PROPERTY`, `POST_TITLE_PROPERTY`, `POST_TYPE_SELECT_PROPERTY`: Nome das propriedades do meu banco. Estas variáveis podem estar diretamente no código, preferi colocar aqui por facilidade de modificação.
+- `BACKLOG_STATUS`, `DRAFT_STATUS`, `PUBLISHED_STATUS`: Possíveis valores de situação que minha postagem pode ter no meu banco. Estas variáveis podem estar diretamente no código.
+
+O arquivo `.env.example` pode ir para o repositório Git, enquanto o `.env` (criado a partir do exemplo) é ignorado no .gitignore.
+
+Agora que temos tudo configurado, vamos programar a integração em si.
+
+### Como é o retorno da API?
+
+O Notion funciona por meio de “blocos”, onde cada bloco é como se fosse um elemento/linha na nossa página do Notion, ele representa o conteúdo da nossa página, seja uma imagem, texto, tabela, cabeçalho, etc.
+
+Em um banco de dados no Notion, podemos armazenar páginas, que é realmente o que vamos fazer, mas as páginas podem conter propriedades além do conteúdo, usaremos isso para armazenarmos metadados sobre nossas páginas.
+
+![Notion's page structure](/images/posts/notion_cms_blog/notion_page_structure.png)
+[*Imagem da documentação da API do Notion*](https://developers.notion.com/docs/working-with-page-content)
+
+No nosso caso, vamos armazenar nas propriedades o Título do post, Status e Tipo.
+
+Como havia dito, o Notion trata o seu conteúdo como blocos, estes blocos também possuem propriedades, como a data em que foram criados e modificados, uns identificados, se possui filhos, entre outras informações, mas o que realmente importa para nós neste momento é somente o conteúdo em si do bloco.
+
+Vamos tratar isso um pouco mais para frente, mas tenha isso em mente, o Notion ele não vai retornar o conteúdo cru de uma página para nós, temos que pegar o que realmente vamos precisar.
+
+### Camada de abstração
+
+Como forma de separar o que o Notion retorna da API para o que realmente vamos usar, servindo até como forma de desacoplamento de dependências, vamos criar várias interfaces que serão usadas pela nossa implementação e por consequência, nossa UI.
+
+Temos que tomar como referência as propriedades das nossas páginas de postagem.
+
+![First Post on Notion](/images/posts/notion_cms_blog/first_post.png)
+
+Para começar, vamos criar uma interface para uma página no nosso banco de dados de postagens no Notion:
+
+```typescript
+export interface NotionDatabasePostTypeSelectProperty {
+    type: string
+    select: {
+        name: string
+        color: string
+    }
+}
+
+export interface NotionDatabasePage {
+    title: string,
+    id: string,
+    cover: string | null,
+    type?: NotionDatabasePostTypeSelectProperty | undefined
+}
+```
+
+Criamos primeiro o `NotionDatabasePostTypeSelectProperty` que representará o tipo do post, perceba que ele também possui uma propriedade `color`, isso porque a API também retorna esta informação e podemos usar para exibir o tipo da postagem na mesma cor que colocamos no Notion.
+
+Em seguida criamos o `NotionDatabasePage`, onde este é que irá representar de fato nossa página, nela temos o título da página, que será o título da postagem, identificador, tipo e a capa, pois no Notion podemos colocar uma capa em cada uma das nossas páginas, então, podemos usar isso para ser a real capa do nosso post.
+
+Agora vamos criar algumas interfaces para nós auxiliares a acessar determinadas propriedades de forma estruturada:
+
+```typescript
+export interface NotionDatabasePropertiesName {
+    statusProperty: string
+    backlogStatus: string
+    draftStatus: string
+    publishedStatus: string
+    postTitleProperty: string
+    postTypeSelectProperty: string
+}
+```
+
+Esta interface servirá somente para guardamos as informações de Status que colocamos nas variáveis de ambiente no código, para acessar as variáveis de ambiente, podemos usar o `import.meta`, já que o Astro usa o <BrandIcon brand="vite"/> Vite:
+
+```typescript
+const databaseProperties: NotionDatabasePropertiesName = {
+  statusProperty: import.meta.env.STATUS_PROPERTY,
+  backlogStatus: import.meta.env.BACKLOG_STATUS,
+  draftStatus: import.meta.env.DRAFT_STATUS,
+  publishedStatus: import.meta.env.PUBLISHED_STATUS,
+  postTitleProperty: import.meta.env.POST_TITLE_PROPERTY,
+  postTypeSelectProperty: import.meta.env.POST_TYPE_SELECT_PROPERTY,
+};
+```
+
+Para finalizar esta parte, vamos umas interfaces para utilizarmos no filtro de postagens, já que queremos exibir apenas as postagens que estão marcadas como “Publicadas” no Notion, então criar uma forma estruturada de especificar quais tipos de postagens queremos receber é uma boa forma de melhorar nossa DX.
+
+```typescript
+export enum NotionPageStatusFilter {
+    backlog,
+    draft,
+    published,
+}
+
+export interface NotionStatusFilter {
+    property: string
+    status: {
+        equals: string
+    },
+}
+```
+
+Com todas estas interfaces criadas, vamos agora implementar o acesso às nossas páginas no banco de dados do Notion.
+
+### Acessando as páginas
+
+Como estamos utilizando o cliente do Notion, devemos primeiro inicializar ele para que possamos utilizar, para isso, vamos usar a chave da API que guardamos nas variáveis de ambiente:
+
+```typescript
+const notionClient = new Client({
+  auth: import.meta.env.NOTION_SECRET,
+});
+```
+
+Para usar nossa camada de abstração, vou criar algumas funções que vai nos ajudar a converter o que recebemos da API do Notion para algum tipo da nossa camada de abstração, começando com uma simples função que mapeia as propriedades de uma página no Notion para o `NotionDatabasePage` que é a interface que criamos anteriormente:
+
+```typescript
+export function parseDatabasePage(page: any): NotionDatabasePage {
+  return {
+    id: page.id,
+    title: extractDatabasePageTitle(page.properties),
+    cover: extractDatabasePageExternalCover(page.cover),
+    type: extractDatabasePageSelectProperty(page.properties),
+  }
+}
+```
+
+Em um banco de dados no Notion, podemos guardar informações além de páginas, mas como estamos interessados apenas em páginas, vamos criar uma função para filtrar o que é página dos resultados do banco de dados, nesta mesma função. vamos usar a função que criamos anteriormente para, assim que filtrar, já mapear o resultado para o tipo `NotionDatabasePage`:
+
+```typescript
+export function extractDatabaseQueryResults(
+  results: any[]
+): NotionDatabasePage[] {
+  const databasePages: NotionDatabasePage[] = [];
+  results
+    .filter((r) => r.object === "page")
+    .forEach((result) => {
+      databasePages.push(parseDatabasePage(result));
+    });
+
+  return databasePages;
+}
+```
+
+Recebemos o resultado da API, filtramos para termos apenas páginas e em seguida mapeamos esses objetos para `NotionDatabasePage`.
+
+A função que vamos criar para recupera as informações, irá receber um filtro, que é o `NotionPageStatusFilter` que criamos anteriormente, mas este tipo a API do Notion não entende, temos que usar ele para criar um tipo que o Notion entende, coisa que já fizemos!
+Com o tipo `NotionStatusFilter` que criamos na camada de abstração, ele tem as mesmas propriedades que a API do Notion reconhece, conseguimos fazer isso pois o Typescript usa o duck typing, o que nos permite criar um objeto simples com a nossa interface contento somente aquilo que vamos usar.
+
+Usaremos o `NotionPageStatusFilter` como facilitador, pois com ele vamos criar um objeto que faz o filtro das informações de acordo com seu valor. Junto com ele, vamos usar o `NotionDatabasePropertiesName` para pegarmos os possíveis valores da propriedade Status das variáveis de ambiente:
+
+```typescript
+export function toNotionStatusFilter(
+  filter: NotionPageStatusFilter
+): NotionStatusFilter {
+  switch (filter) {
+    case NotionPageStatusFilter.backlog:
+      return {
+        property: databaseProperties.statusProperty,
+        status: {
+          equals: databaseProperties.backlogStatus,
+        },
+      };
+    case NotionPageStatusFilter.draft:
+      return {
+        property: databaseProperties.statusProperty,
+        status: {
+          equals: databaseProperties.draftStatus,
+        },
+      };
+    case NotionPageStatusFilter.published:
+      return {
+        property: databaseProperties.statusProperty,
+        status: {
+          equals: databaseProperties.publishedStatus,
+        },
+      };
+  }
+}
+```
+
+Agora temos tudo que vamos precisar para criar a função para pegar nossas páginas, então vamos implementá-la:
+
+```typescript
+async function getPagesFromDatabase(
+  filter?: NotionPageStatusFilter | undefined
+): Promise<NotionDatabasePage[]> {
+  const databaseId = import.meta.env.NOTION_DATABASE_ID;
+  const statusFilter =
+    filter !== undefined ? toNotionStatusFilter(filter) : undefined;
+
+  const response = await notionClient.databases.query({
+    database_id: databaseId,
+    filter: statusFilter,
+  });
+  const databasePages: NotionDatabasePage[] = extractDatabaseQueryResults(
+    response.results
+  );
+  return databasePages;
+}
+```
+
+Começamos pegando o identificador do nosso banco de dados do Notion e verificando se foi passado algum filtro como parâmetro, depois usamos o cliente do Notion que instanciamos anteriormente para acessar o nosso banco e usando o filtro, recuperar todas as informações, em seguida usamos a função `extractDatabaseQueryResults` para filtrar apenas as páginas e em seguida, retornamos o resultado.
+
+Podemos criar uma função que será chamada pela UI que, está função vai usar a `getPagesFromDatabase` para recuperar apenas os posts publicados:
+
+```typescript
+export async function getPublishedPosts(): Promise<NotionDatabasePage[]> {
+  const databasePages = await getPagesFromDatabase(
+    NotionPageStatusFilter.published
+  );
+  return databasePages;
+}
+```
+
+Como disse anteriormente, vamos terminar toda a integração do Notion para depois partirmos para algo mais específico do framework que estamos usando, isso irá deixar tudo mais conciso.
+
+### Acessando o conteúdo da página
+
+Agora que conseguimos acessar nossas postagens publicadas, vamos criar agora uma função (supersimples), para acessar o conteúdo das páginas que listamos. Lembra que na camada de abstração a nossa `NotionDatabasePage` tem a propriedade `id`?
+Usaremos estas propriedades para especificar de qual página queremos requisitar o conteúdo.
+
+Como havia dito, o Notion trata o conteúdo de uma página como blocos, então para acessar os blocos de uma página podemos fazer da seguinte forma:
+
+```typescript
+export async function getPageContent(
+  pageId: string
+): Promise<ListBlockChildrenResponse> {
+  return await notionClient.blocks.children.list({
+    block_id: pageId,
+  });
+}
+```
+
+Uma simples função que recebe o `id` da página e retorna seu conteúdo.
+
+Pronto, simples assim, estamos com tudo pronto para partir para a UI, estamos listando o conteúdo e acessando o conteúdo dele.
+Mas não pare por aqui, se vocês está aqui apenas para aprender a implantar o Notion no seu blog, não saia ainda, o Notion retornar o conteúdo de uma página em bloco (como já havia dito várias vezes kk), tem que encontrar uma forma de renderizar estes blocos em <BrandIcon brand="html5"/> HTML, e vou te falar como.
+
+## UI
+
+Adicionamos o React como framework não por acaso, isso porque vamos usar uma biblioteca que irá nos auxiliar a renderizar os blocos do Notion em HTML.
+
+### Renderizar o conteúdo da página
+
+Vamos usar o [react-notion-renderer](https://github.com/9gustin/react-notion-render) criado por [9gustin](https://github.com/9gustin), ele nos provê um componente React que, somente passando o retorno da nossa função `getPageContent`, já conseguimos renderizar o conteúdo da página do Notion.
+
+Então vamos instalar ela com:
+
+```typescript
+npm i @9gustin/react-notion-render
+```
+
+Caso nunca tenha visto Astro antes, não se preocupe, este projeto não tem o intuito de foca nesta ferramenta, o que quero deixar aqui é a ideia é um exemplo mais geral possível, para que você consiga implementar no framework de sua escolha.
+
+Como disse, vamos usar a função `getPageContent` que criamos para pegar o conteúdo da página pelo `id` e podemos passar direto para o componente `<Render/>` provido pela biblioteca que acabamos de instalar, portanto:
+
+```typescript
+---
+import { Render } from "@9gustin/react-notion-render";
+import PostLayout from "../../layouts/PostLayout.astro";
+import { getPostInfo, getPageContent } from "../../scripts/notion/notion_integration"
+
+
+const { postId } = Astro.params
+const pageInfo = await getPostInfo(postId!)
+const content = await getPageContent(postId!)
+
+const result: any = content.results
+---
+
+<PostLayout {...pageInfo}>
+    <Render blocks={result} />
+</PostLayout>
+```
+
+Recebemos o `id` do post na rota da página e passamos ela diretamente para nossa função, assim já renderizamos o conteúdo da nossa página.
+
+### Listando os posts publicados
+
+Agora vamos listar os posts publicados com a função `getPublishedPosts` que criamos anteriormente, não usaremos mais o React daqui em diante, o Astro é suficiente para suprir as nossas necessidades.
+
+Para listar o conteúdo podemos criar o seguinte componente:
+
+```typescript
+---
+import { getPublishedPosts } from "../scripts/notion/notion_integration"
+import PostCard from "./PostCard.astro"
+
+const publishedPosts = await getPublishedPosts()
+---
+
+<ul>
+    {
+        publishedPosts.map(p => (
+            <PostCard post={p}/>
+        ))
+    }
+</ul>
+```
+
+> Este é um componente Astro, caso queira saber mais sobre como ele funciona, acesse a [documentação oficial](https://docs.astro.build/pt-br/basics/astro-components)
+
+`<PostCard/>` é um outro componente que passamos um post como parâmetro, a implementação dele é da seguinte forma:
+
+```typescript
+---
+import type { NotionDatabasePage } from "../scripts/notion/types";
+import PostTitleType from "./PostTitleType.astro";
+
+interface Props {
+  post: NotionDatabasePage;
+}
+
+const { post } = Astro.props;
+const { id, title, cover, type } = post;
+---
+
+<li>
+  <div class="p-3 rounded-md hover:bg-slate-300">
+    <a href=`/posts/${id}`>
+      {
+        cover !== null &&
+          <img src={cover} class="object-cover w-full h-40 rounded-md" />
+      }
+      <PostTitleType title={title} type={type}/>
+    </a>
+  </div>
+</li>
+```
+
+Quando clicamos nele, navegamos para a página de posts passando justamente o `id` do post atual do cartão, assim quando clicamos nele acessamos a página do post onde recebemos o `id` e recuperamos o conteúdo da página e renderizamos com o componente `<Render/>`.
+
+# Resultado final
+
+![Final result](/images/posts/notion_cms_blog/final_result.gif)
+
+# Conclusão
+
+## Links uteis
+
+Este post está com bastante conteúdo, então deixo aqui alguns links sobre assunto que falamos aqui caso tenha ficado alguma dúvida e fique até como referência.
+
+- [What is a block? – Notion Help Center](https://www.notion.so/help/what-is-a-block)
+- [notion-client - npm (npmjs.com)](https://www.npmjs.com/package/notion-client)
+- [@astrojs/react | Docs](https://docs.astro.build/pt-br/guides/integrations-guide/react/)
+- [Introdução | Docs (astro.build)](https://docs.astro.build/pt-br/getting-started/)
+- [Page (notion.com)](https://developers.notion.com/reference/page)
+- [Working with databases (notion.com)](https://developers.notion.com/docs/working-with-databases#database-properties)
+
+## Repositório
+
+O projeto está disponível em um repositório no GitHub e pode ser acessado através deste link:
+
+[LuanRoger/notion-blog: A simple blog powered by Astro 🚀. It uses the Notion API as content manager. (github.com)](https://github.com/LuanRoger/notion-blog)
+
+Além disso, você pode aceso o deploy do exemplo final por aqui: [Notion Blog (notion-blog-luanroger.vercel.app)](https://notion-blog-luanroger.vercel.app)
+
+## Obrigado
+
+Como sempre, obrigado se você leu até aqui, ***Peace✌️***.
