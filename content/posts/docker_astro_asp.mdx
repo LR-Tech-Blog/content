@@ -1,0 +1,387 @@
+---
+id: "docker_astro_asp"
+title: "Introduzindo Docker na prática com Astro e ASP.NET"
+author: rog
+date: 2024-05-03
+draft: false
+tags: 
+- "astro"
+- "react"
+- "docker"
+- "aspnet"
+- "typescript"
+postType: "Learn"
+description: "Considero que saber Docker é tão crucial quanto saber Linux para quem é desenvolvedor(a), ela pode participar de todas as etapas do desenvolvimento, do desenvolvimento até a produção, então vamos entender alguns conceitos importantes para você começar com 🐋 Docker"
+image: {
+    "src": "/images/posts/docker_astro_asp/docker_astro_asp.png",
+    "alt": "Legend Of Zelda: Link's Awakening landscape",
+    "href": "https://wall.alphacoders.com/big.php?i=380464"
+}
+---
+import BrandIcon from "../../components/BrandIcon.astro"
+
+# Introdução
+
+O <BrandIcon brand="docker"/> Docker já está no mercado a algum tempo, ele vem resolver os problemas que muitos de nós desenvolvedores e DevOps vem enfrentando quando o assunto é deploy, mas acabaram criando uma solução tão boa, que podemos usar até para desenvolver nossas aplicações localmente.
+
+Para você que está começando na programação, Docker talvez não faça muito sentido para você neste momento, mas quando começar a criar serviços que dependem de outros serviços, ou se encontrar dizendo a bendita frase: “Mas funciona na minha máquina”, então, saberá que chegou a hora de aprender Docker.
+
+# Porque Docker é importante?
+
+Para ter a real noção do impacto do Docker no mercado, ele quem cunhou o termo “conteinerização” (vou explicar o que significa mais a frente), vários dos mais importantes serviços de cloud hoje em dia, como <BrandIcon brand="amazonaws"/> AWS, <BrandIcon brand="googlecloud"/> Google Cloud, <BrandIcon brand="digitalocean"/> DigitalOcean, <BrandIcon brand="microsoftazure"/> Azure, etc. 
+Suportam Docker e vários destes serviços oferecem produtos específicos para deploy de contêineres.
+
+Isso tudo não é à toa, a facilidade que ele traz para desenvolvermos nossas aplicações principalmente, distribuí-las e escalá-las, não se compara ao que tínhamos antes.
+
+# Como Docker funciona?
+
+Antes de prosseguir, vou falar de forma bastante simples para que o máximo de pessoas entendam o que é o Docker e como ele funciona, juntamente com alguns termos importantes que você vai ouvir e usar bastante daqui em diante.
+
+## O que é o Docker?
+
+Docker em si pode ser visto de várias formas, como uma ferramenta, uma plataforma ou até mesmo um simples utilitário, pois como dito anteriormente, o Docker é bastante versátil e flexível para ser usado em diferentes casos de uso, vou cobrir alguns deles mais a frente, mas vamos esclarecer o que ele é primeiro.
+
+O Docker ele é separado em três camadas:
+
+1. Cliente
+2. Host
+3. Registro
+
+O principal componente é o Host, nele é onde fica as nossas imagens, containers (vou explicar eles mais a frente) e o mais importante: o Docker deamon.
+Deamon é um tipo de processo que fica em execução em segundo plano, isso significa que não precisamos estar interagindo diretamente com ele para que funcione.
+
+Este deamon é o responsável por gerenciar nossas, imagens, containers, volumes e outros. É com ele que vamos rodar, construir e gerenciar nossos contêineres, mas não temos acesso direto com ele, para usá-lo usamos o Cliente.
+
+O cliente é um CLI que o Docker disponibiliza para que possamos usar de tudo que o Docker tem a oferecer.
+
+A camada de registro é onde fica armazenados as imagens, que podem ser baixados para nossa instancia local do Docker, com ela, podemos criar uma imagem localmente e mandá-la para o registro para que fique armazenado em outro local. 
+O Docker Hub por exemplo, é um registro público, onde qualquer pessoa pode construir uma imagem e mandar para lá, mas existem também registros privados que você mesmo pode criar e colocar suas imagens, para que assim, elas posam ser acessadas facilmente e não precise construi-la de novo.
+
+Perceba que podemos ter tanto imagens locais, quanto em um registro, mas só podemos usá-las (criar contêineres a partir dela), se ela estiver local. Para comparar, o Docker Hub é como o <BrandIcon brand="github"/> GitHub, mas ao invés de gerenciar repositórios <BrandIcon brand="git"/> Git, ele gerenciar imagens de container Docker.
+
+![Docker's layers](/images/posts/docker_astro_asp/docker_layers.png)
+**Fonte:** [Docker overview | Docker Docs](https://docs.docker.com/get-started/overview)
+
+## Termos
+
+Para trabalharmos com Docker, usamos imagens, contêineres, networks, volumes, etc. Mas o que tudo isso significa? 
+Vamos começar do mais simples e básico: A imagem.
+
+### Imagem
+
+Uma imagem é onde contém um sistema operacional, sua aplicação e todas as dependências que ela precisa para funcionar. 
+
+Mas como colocamos um sistema operacional em uma imagem do Docker? 
+Uma imagem pode ser criada a partir de outra imagem, como por exemplo, uma imagem de <BrandIcon brand="ubuntu"/> Ubuntu, que está público no Docker Hub para usarmos, pode ser usada como base para criar nossa própria imagem com nossa aplicação. 
+Para criar nossa própria imagem, nós precisamos criar um Dockerfile, neste arquivo, definimos tudo que nossa solução precisa para rodar, desde a imagem base até o comando para rodar ele, mais a frente, vou mostrar isso na prática.
+
+### Dockerfile
+
+Este é um arquivo onde especificamos tudo que nossa imagem vai ter, então é com ela que conseguimos criar nossa própria imagem.
+
+Nela é onde especificamos a imagem base, onde especificar nossa aplicação, como ela é construída e executada, instalando também suas dependências. 
+Para gerar uma imagem a partir deste arquivo, é necessário construir a imagem com um comando no CLI do Docker, mais a frente, vou mostrar como isso funciona.
+
+### Container
+
+Um container é uma instância que roda a partir de uma imagem, um container contém o sistema de arquivo inteiro do SO que você escolheu para basear sua imagem. 
+Ele também inclui tudo o que você especificou, como a sua aplicação e dependências.
+Perceba que um container é uma instância executada a partir da nossa imagem, portanto, podemos ter várias instâncias da nossa aplicação executando simultaneamente, isso é muito bom para conseguirmos escalar soluções, dividir carga, etc. 
+Com isso, podemos facilmente levantar uma instância do banco de dados <BrandIcon brand="postgresql"/> PostgreSQL, sem nem precisar instalá-lo em nossa máquina local, apenas com uma imagem do Docker, criamos quantos instâncias quisermos.
+
+Uma instância pode ser criada, parada, movida e removida, além disso, podemos fazer com que dois contêineres se conectem por meio de networks virtuais criadas pelo Docker, dessa forma, conseguimos ter nossa aplicação e suas dependências em um container e o banco de dados em outra.
+
+# Aplicabilidades
+
+Melhor que falar dos problemas que ele vem resolver, vou falar das aplicabilidades, já que é o que torna o Docker uma ferramenta tão versátil. 
+Aqui vou explicar um caso de uso para o Docker juntamente com um breve desenvolvimento sobre um problema, e no final, como o Docker pode ser usado para resolver este determinado problema.
+
+## Distribuição e deploy
+
+Este pode ser o mais simples e básico caso de uso para o Docker, e possivelmente, foi criado pensando neste propósito em específico.
+
+Quando criamos uma solução, seja um serviço como uma API ou uma simples página estática e queremos distribuir ela, temos a opção de pagar por um VPS, estes VPSs geralmente veem apenas com um Linux ou Windows “de fábrica”, apenas com os programas padrão de cada sistema, então temos a árdua tarefa de instalar na mão, tudo que nossa aplicação vai precisar para funcionar e ser usada por outros usuários.
+
+Com Docker podemos resolver isso de forma simples: Conteinizamos nossa aplicação com tudo que ela precisa para rodar, colocamos no DockerHub (ou podemos fazer o build da imagem com o Dockerfile, caso não queira distribuir ela), instalamos o Docker no nosso VPS, fazemos o pull da imagem e criamos um container com ela, pronto.
+
+## Usar diferentes versões de um software
+
+Quando temos um sistema legado ou queremos testar nossa aplicação em diferentes versões de um SO, temos que manualmente gerenciar estas versões, incluindo seu ferramental, como o <BrandIcon brand="nodedotjs"/> Node ou <BrandIcon brand="flutter"/> Flutter que tem seu próprio gerenciador de versões, pois quando temos vários projetos em que cada um usa uma versão diferente das nossas ferramentas, temos que manter esta versão em específico para evitar problemas de compatibilidade até migrarmos para a versão mais nova.
+
+Isso pode ser fácil ou difícil dependendo da ferramenta que nossa aplicação precisa para rodar, mas isso pode se tornar fácil para todo caso com Docker.
+
+Um registro do Docker nos permite manter versões anteriores a nossa atual, usando tags para nomeá-las. 
+Assim, podemos facilmente fazer o pull da imagem daquela ferramenta que nossa aplicação necessita, na exata mesma versão em que ela foi criada por exemplo, podemos até usar versões superiores ou inferiores, a fim de testar o comportamento.
+
+## Teste
+
+Por falar em testar, vamos entrar mais a fundo neste tópico. Se você desenvolve sistemas a algum tempo, provavelmente, já teve que usar banco de dados, onde que muitas vezes, nossa aplicação é bastante dependente deste tipo de serviço, o que pode tornar a configuração do ambiente para teste de integração muito demorado, sem falar quando queremos rodar eles em um serviço de CI/CD.
+
+Docker pode facilitar este caso, você pode criar um compose, que é um arquivo onde definimos um conjunto de serviços (neste caso, cada serviço é um container), incluindo sua aplicação, para que ela possa executar e executar os testes sem nenhum problema.
+
+Outra alternativa é usar [Testcontainers](https://testcontainers.com), que torna bem simples a configuração inicial do ambiente e simplifica modificações futuras, como adição de novos serviços, não vou mostrar esta alternativa aqui para não fugir muito da proposta central do post, fica a citação como tema de estudo.
+
+# Prática
+
+Como dito no título da postagem, vou mostrar todos estes conceitos na prática. O foco aqui é o Docker, o projeto é apenas para fins de demonstração.
+
+## Em que consiste o projeto?
+
+Uma aplicação front-end <BrandIcon brand="astro"/> Astro simples, que consome de uma API feita com <BrandIcon brand="dotnet"/> ASP.NET, que por sua vez, usa um banco de dados PostgreSQL para armazenar informações de usuários cadastrados. 
+Este usuário são apenas informações brutas, não contém nenhuma forma de autenticação.
+
+### Front-end (Astro)
+
+![Front-end screenshot](/images/posts/docker_astro_asp/astro_front.png)
+
+No front-end, usei o Astro para gerar uma página estática com <BrandIcon brand="html5"/> HTML e<BrandIcon brand="tailwindcss"/> TailwindCSS, para agilizar, usei o <BrandIcon brand="shadcnui"/> [shadcn-ui](https://ui.shadcn.com) para criar botões e a tabela. 
+Esta camada se comunica com a API por meio do <BrandIcon brand="axios"/> axios, fazendo requisições HTTP e tratando a resposta.
+
+O font-end é basicamente um CRUD de usuário de forma bruta, sem tratamento, pois queria deixar o mais simples possível, como havia dito, o intuito não é mostrar o projeto em si, mas como podemos usar ele com o Docker.
+
+### Back-end (ASP.NET)
+
+A tecnologia aqui foi muito de gosto, então use a tecnologia que preferir. 
+É uma simples API Web que recebe requisições do front, como a requisição de cadastro, leitura, atualização, etc. A requisição será tratada propriamente, e então, atualizar a estado do banco de dados PostgreSQL conforme a requisição.
+
+> Usei este projeto para aprender a aplicar pela primeira vez a Clean Architecture, e sinto que ficou bastante interessante, recomendo dar uma olhada no repositório, o link para ele vai estar no final do post.
+
+# Conteinerizar a aplicação
+
+A partir daqui você deve ter o Docker instalado e funcionando, não vou mostrar isso aqui, pois a documentação cobre isso de forma bastante clara, caso não tenha ele instalado, acesse a página de download e instale, depois volte e continue aqui.
+
+Caso queira verificar se está tudo funcionando, apenas rode este comando no terminal:
+
+```bash
+docker ps
+```
+
+Este comando irá mostrar todos os contêineres em execução no momento, se o Docker não estiver funcionando, um erro vai aparecer.
+
+Como dito anteriormente nos termos, para conseguirmos criar uma imagem com nossa aplicação, devemos criar um Dockerfile, o ideal é que criaremos ele na raiz do projeto que vamos conteinerizar, no meu caso, minha estrutura está assim:
+
+```
+.
+├── ./client
+└── ./Server
+```
+
+O `client` (front-end) e o `Server` (back-end) são tratados como aplicações diferentes, então será um Dockerfile pra cada, vou começar pelo front-end.
+
+Antes de continuar, saiba o que sua aplicação precisa para ser executada, pois muitas vezes instalamos as ferramentas, mas não lembramos como realmente fizemos isso, então tenha em mente este passo-a-passo, já que nós vamos replicá-lo mais à frente.
+
+Meu front-end é um site estático, então precisamos de um servidor HTTP para receber as requisições, aqui vou usar o <BrandIcon brand="nginx"/> NGINX. Além disso, vou precisar também do <BrandIcon brand="npm"/> NPM e do Git para fazer o build do meu site com Astro.
+
+Na raiz do diretório `client` vou criar um arquivo chamado "Dockerfile" (sem extensão), com o seguinte conteúdo:
+
+```dockerfile
+FROM nginx:stable-alpine as base
+RUN apk add --no-cache nodejs npm git
+EXPOSE 80
+
+FROM base as build
+WORKDIR /build
+COPY . /build/
+RUN npm install
+RUN npm run build
+
+FROM build as release
+COPY --from=build /build/dist /usr/share/nginx/html
+```
+
+O Dockerfile funciona com instruções e argumentos, a primeira palavra é sempre a instrução e o que vem depois são os argumentos. Vamos falar sobre cada um deles:
+
+- `FROM`: Define uma nova etapa de construção usando uma imagem como base. Neste caso, estou usando uma imagem com o sistema operacional <BrandIcon brand="alpinelinux"/> Alpine com o NGINX já configurado.
+- `RUN`: Executa um comando e cria uma nova camada para ser usada nos próximos passos do Dockerfile. Neste caso, o ``RUN`` aparece algumas vezes, isso porque ele executa comandos no terminal, então uso ele para instalar as dependências e construir a aplicação
+- `EXPOSE`: Faz com que o container escute nesta determinada porta na network em que está, como o NGINX expõe a porta 80 então faço com que o container possa receber requisições desta porta.
+- `WORKDIR`: Defini o local atual de execução dos comandos. Então todo comando `RUN` por exemplo, será executado neste diretório.
+- `COPY`: Copia arquivos e diretórios de fora do container para dentro. Isso é bastante importante, pois é com ela que copiamos nosso projeto para dentro do container para ser construído e executado. Neste caso, estou copiando tudo do meu diretório atual de fora do container, para o ``/build/`` dentro do container.
+
+Estes não são as únicas instruções que um Dockerfile pode conter, mas aqui estão os mais importantes. Agora vamos esclarecer algumas peculiaridades:
+
+- Uma imagem é criada a partir de outra imagem com a instrução `FROM`, uma imagem é referenciada da seguinte forma: nome:tag. Aqui estamos usando a imagem `nginx` com a tag `stable-alpine`.
+- Etapas e camadas são bem importantes, o Docker faz cache delas para que possa ser usada novamente em um *build* local futuro
+- `as` é uma palavra-chave que podemos usar para definir o nome da etapa em que estamos para que possamos usar ela em outras camadas
+- Na segunda etapa, usamos a camada anterior (`base`) como base para esta nova camada (`build`).
+- Da mesma forma na última instrução `COPY`, usamos a *flag* `--from` para especificar de onde queremos copiar, estamos copiando o que foi construído em `/build/dist` para `/usr/share/nginx/html`, que é o local onde colocamos páginas estáticas para que o NGINX as entregue quando requisitamos.
+
+Agora que sabemos como um Dockerfile funciona, vamos criar um que requer uma configuração mais bem pensada. 
+Como já havia dito, o back-end que vamos Conteinerizar foi criado em ASP.NET usando .NET, então devemos reproduzir tudo que fazemos normalmente para rodar este tipo de aplicação, mas agora, por meio de instruções no Dockerfile.
+
+Da mesma forma que fiz anteriormente, vou mostrar o resultado final e explicar depois.
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["Server.csproj", "./"]
+RUN dotnet restore "Server.csproj"
+COPY . .
+WORKDIR "/src/"
+RUN dotnet build "Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Server.dll"]
+```
+
+Começamos definindo nossa primeira etapa chamada “base” usando a imagem de runtime do .NET 8 disponibilizada pela própria Microsoft no seu repositório de Docker. 
+Perceba que a etapa seguinte usamos outra imagem, a do SDK do .NET 8, isso porque precisamos compilar nossa aplicação antes de rodar, dessa forma não ficamos dependentes de um build local.
+
+Temos algumas instruções novas, que não apareceram no Dockerfile anterior:
+
+- `ARG`: Define uma variável no Dockerfile, ela pode ser alterada na hora de construção da imagem usando este Dockerfile. Neste caso, estou usando para definir qual configuração estou usando para construir minha aplicação.
+- `ENTRYPOINT`: Especifica qual executável o container irá rodar ao ser iniciado. Neste caso, uso o comando do CLI do .NET para executar a *dll* que foi gerado pelo comando `dotnet publish`.
+
+> Mas por que não usamos a instrução `ENTRYPOINT` no exemplo anterior?
+
+Pois como o NGINX é um deamon que é iniciado juntamente com o container, não precisamos iniciá-lo, então, apenas colocamos os arquivos do nosso site para que ele possa servir.
+
+Perceba que a nossa primeira etapa (”base”) é usada apenas pela última etapa (”final”), pois a primeira etapa usa como base o runtime (o que é preciso para rodar a aplicação), mas não tinha a ela construída, então as outras etapas entre ela e a etapa final, uso como base a imagem com o SDK do .NET 8 (que é necessário para construir a aplicação). 
+Assim, pego apenas o resultado do build, da imagem anterior para a final com a flag --from=publish.
+
+# Criar as imagens
+
+Agora que temos os dois Dockerfile para as duas partes da nossa aplicação, vamos partir para a criação da imagem de Docker usando-as.
+
+A partir daqui, se você não tem o Docker instalado, será necessário instalá-lo e deixar ele funcionando, pois como havia dito, ele é um processo que fica rodando em segundo plano. Vamos usar a CLI dele para construir nossas imagens, para saber se o Docker está instalado, rode este comando no terminal.
+
+```bash
+docker --version
+```
+
+```
+Docker version 26.0.0
+```
+**Saida**
+
+> Se aparecer algum erro no seu, verifique se ele está de fato rodando.
+
+Agora que sabemos que está tudo funcionando, vamos criar primeiro a imagem da nossa aplicação cliente. Então vamos para a pasta onde o Dockerfile está localizado (a raiz da nossa aplicação cliente) e executar o comando de build:
+
+```bash
+docker build -t luanroger/astro-client:1.0 .
+```
+
+O comando `docker build` é usado para criarmos o uma imagem a partir de um Dockerfile, em seguida, passamos a flag `-t` para definir a tag da nossa imagem, o ponto no final indica o contexto do build, ou seja, onde ele vai considerar como raiz, já que no Dockerfile está na raiz da nossa aplicação, então ele já irá identificar a existência do arquivo neste contexto.
+
+Se você configurou tudo certo no seu Dockerfile, ele vai ter criado a image, para visualizar as imagens que você tem, use o comando:
+
+```bash
+docker images
+```
+
+Ele vai listar as suas imagens, tanto as que você criou, quanto as que você fez o pull de repositórios do Docker, juntamente com suas respectivas tags e ID, tamanho da imagem, etc. Agora, antes de rodá-las, vamos criar a imagem do nosso back-end, indo para a raiz dele e executando o mesmo comando, ele vai criar a imagem do “Server”, mas precisamos mudar apenas a tag, pois não pode ter tags repetidas:
+
+```bash
+docker build -t luanroger/dotnet-server:1.0 .
+```
+
+Pronto. 
+Agora temos as duas imagens que precisamos para finalmente rodas nossos contêineres. 
+Lembre-se que se quiser ver suas imagens, use o comando citado anteriormente.
+
+# Criando os contêineres
+
+Antes de iniciá-los devemos fazer com que eles conversem entre si, pois por padrão, o Docker cria uma rede virtual para cada container, não sendo possível que ele converse com o mundo externo, mas nós conseguimos acessá-lo de fora. Mas devemos resolver este problema primeiro, já que nosso front-end não vai funcionar direito sem nosso back-end.
+
+## Criando redes no Docker
+
+Para que dois contêineres “conversem”, eles devem estar na mesma rede do Docker, elas devem ser criadas antes de criarmos os contêineres, já que eles são criados com as redes já especificadas, então para criar as redes, usamos o seguinte comando:
+
+```bash
+docker network create -d bridge fullstack
+```
+
+`docker network` é usado para gerenciar redes do Docker, em seguidas usamos o `create` para dizer que vamos criar uma nova rede, depois especificamos o driver, que neste casso, usamos o bridge, mas o Docker tem vários outros drivers, se quiser saber mais sobre eles, [consulte a documentação](https://docs.docker.com/network/drivers). 
+Por último, definimos o nome da rede, pronto, para ver as redes que temos criadas, usamos o comando:
+
+```bash
+docker network ls
+```
+
+Ele vai listar todas as redes, juntamente com seus drivers. 
+Antes de prosseguir, vamos esclarecer uma dúvida que você provavelmente está tendo.
+
+> Já que minha aplicação vai rodar em uma rede virtual, devo me preocupar com as portas que minha aplicação usa para se conectar com outros serviços.
+
+E a resposta é não, a porta que sua aplicação vai subir é a mesma que você tenha configurado, o que vai mudar é o host, pois vamos nos conectar em um host “externo”, ou seja, não será mais o localhost, o novo host que sua aplicação vai se conectar será o nome do container, assim, se você criar um container chamado “api”, então, o host que seu front-end vai se conectar vai ser `http://api:<porta>`, isso vai ficar mais claro quando criarmos os contêineres.
+
+# Subindo os contêineres
+
+Agora que temos tudo que precisamos para, finalmente, executar os contêineres, vamos começar criando o contêiner para o front-end usando a imagem `luanroger/astro-client` que criamos antes, para isso, vamos utilizar o seguinte comando:
+
+```bash
+docker run --name client -p 8080:80 -d --network fullstack luanroger/astro-client:1.0
+```
+
+`docker run` é o comando do CLI do Docker que usamos para criar e rodar um container, em seguida, usamos a flag `-—name` para definir um nome para ele, agora com o `-p` especificamos a porta externa ao container (porta do host) que será mapeada para uma porta dentro do container (host:container), neste caso, mapeamos a porta 8080 do meu computador para a porta 80 do container, já que minha aplicação está rodando na porta 80.
+
+Por fim, especificamos a rede virtual em que nosso container vai rodar com a flag `-—network`, que neste caso, é a rede fullstack que criamos anteriormente, depois, passamos o nome da imagem que nós criamos: fullstack `luanroger/astro-client:1.0`, a tag não é obrigatória, se você não colocar, o Docker vai assumir o valor da tag como latest.
+
+Mas e o `-d`? Esta é uma flag para dizer ao Docker que queremos rodar o container em modo detached, ou seja, ele não vai prender o terminal para exibir os logs da nossa aplicação.
+
+A partir daqui você já pode acessar seu localhost na porta 8080, que já vai conseguir ver o seu site, mas ele não está conectado em nenhum back-end ainda, pois não rodamos ele, vamos corrigir isso agora.
+
+Vamos executar o container do back-end da mesma que o front-end, mas mudando apenas a parta que vamos expor e a imagem, desta forma:
+
+```bash
+docker run --name server -p 5000:8080 -d --network fullstack luanroger/dotnet-server:1.0
+```
+
+Perceba que mudei apenas a flag `-p` para a minha porta 5000 para a 8080 do container, que é a porta em que minha API está rodando.
+
+Minha API depende de um banco de dados PostgreSQL para funcionar, coisa que com o Docker podemos resolver também, como isso vai fugir muito do escopo do artigo, vou mostrar um rápido passo-a-passo para subir um PostgresSQL usando o Docker:
+
+## Subindo um PostgreSQL
+
+Para subir um container, precisamos da imagem, mas a imagem de PostgreSQL não precisamos criar por nós mesmos, no Docker Hub (repositório de imagens oficial do Docker) tem disponível para apenas fazermos o pull, então:
+
+1. Fazer o pull da imagem de PostgreSQL
+
+```bash
+docker pull postgres
+```
+
+2. Executar o container com a imagem
+
+```bash
+docker run --name db -p 5432:5432 -d --network fullstack -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin postgres
+```
+
+O meu back-end já está configurado para conectar com o front-end, como o Docker cria uma rede virtual, com a network que criamos anteriormente, então, todos os contêineres nesta network tem um host próprio, onde o nome do host é o nome do container. Então para meu backend se conectar ao PostgreSQL, uso o host db para se conectar.
+
+## Subindo o cliente
+
+Da mesma forma que fizemos o server, vamos fazer com o cliente:
+
+```bash
+docker run --name client -p 8080:80 -d --network fullstack luanroger/astro-client:1.0
+```
+
+Como o NGINX levanta meu serviço na porta 80, vou mapear ela para conseguir acessar a partir da minha por 8080. Da mesma forma que fizemos para conectar o back-end no banco de dados, vamos fazer pro front-end conectar no back-end, configurando uma variável de ambiente chamada `PUBLIC_API_ENDPOINT` para definir de forma fácil o endereço da API.
+
+# Resultado
+
+![Short GIF demo](/images/posts/docker_astro_asp/final_demo.gif)
+
+Pronto, temos os nossos 3 serviços se comunicando, o front-end, back-end e banco de dados. Tentei fazer da forma mais genérica possível, sem focar mais nas especificidades do meu projeto, pois quero mostrar uma visão mais geral, para que você possa aplicar em qualquer projeto seu.
+
+## Repositório
+
+Caso queira brincar com o Docker com um projeto real, clone o repositório deste projeto:
+[LuanRoger/DockerAstroAspApp](https://github.com/LuanRoger/DockerAstroAspApp)
+
+## Obrigado
+
+Obrigado se você leu até aqui,*** Peace✌️***.
